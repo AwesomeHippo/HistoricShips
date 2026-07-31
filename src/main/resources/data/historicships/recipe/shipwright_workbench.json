@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "#minecraft:logs",
+    "C": "minecraft:crafting_table",
+    "P": "#minecraft:planks",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "LLL",
+    "LCL",
+    "PIP"
+  ],
+  "result": {
+    "id": "historicships:shipwright_workbench"
+  }
+}

@@ -1,0 +1,19 @@
+package com.awesomehippo.historicships.client;
+
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
+
+public final class NapoleonShipKeys {
+    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath("historicships", "ship"));
+    public static final KeyMapping FIRE_ALL = new KeyMapping("key.historicships.fire_all", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 82, CATEGORY);
+    public static final KeyMapping TOGGLE_SAILS = new KeyMapping("key.historicships.toggle_sails", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 70, CATEGORY);
+
+    public static void register(RegisterKeyMappingsEvent event) {
+        event.registerCategory(CATEGORY);
+        event.register(FIRE_ALL);
+        event.register(TOGGLE_SAILS);
+    }
+}
