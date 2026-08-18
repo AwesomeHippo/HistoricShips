@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "historicships:block/shipwright_workbench" },
+    "facing=south": { "model": "historicships:block/shipwright_workbench", "y": 180 },
+    "facing=west":  { "model": "historicships:block/shipwright_workbench", "y": 270 },
+    "facing=east":  { "model": "historicships:block/shipwright_workbench", "y": 90 }
+  }
+}

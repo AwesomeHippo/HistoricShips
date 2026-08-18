@@ -17,26 +17,22 @@ public final class ShipOars {
         parent.addOrReplaceChild(name, cubes, PartPose.offsetAndRotation(x, y, zGunwale, REST_PITCH, yBase, 0.0f));
     }
 
-    public static void poseOar(ModelPart oar, boolean port, float phase, float intensity, float hard, float restPitch, float stationStagger, float bankLag) {
+    public static void poseOar(ModelPart oar, boolean port, float phase, float intensity, float hard, float restPitch) {
         intensity = Mth.clamp(intensity, 0.0f, 1.0f);
         hard = Mth.clamp(hard, 0.0f, 1.0f);
-        float p = phase + stationStagger + bankLag;
         float swingAmp = (0.55f + 0.28f * hard) * intensity;
         float dipAmp = (0.22f + 0.12f * hard) * intensity;
-        float swing = Mth.sin(p) * swingAmp;
-        float drive = Mth.sin(p);
-        float dip = drive * dipAmp;
-        float feather = Mth.sin((p + 0.5f)) * (0.08f + 0.04f * hard) * intensity;
-        float pitch = restPitch + dip;
-        pitch = Mth.clamp(pitch, 0.18f, 1.15f);
-        float yStbd = -swing;
+        float swing = Mth.sin(phase) * swingAmp;
+        float drive = Mth.cos(phase);
+        float pitch = Mth.clamp(restPitch + drive * dipAmp, 0.18f, 1.15f);
+        float feather = (0.5f + 0.5f * drive) * (0.10f + 0.05f * hard) * intensity;
         oar.xRot = pitch;
-        oar.zRot = feather;
         if (port) {
-            oar.yRot = (float) Math.PI - yStbd;
+            oar.yRot = (float) Math.PI + swing;
             oar.zRot = -feather;
         } else {
-            oar.yRot = yStbd;
+            oar.yRot = -swing;
+            oar.zRot = feather;
         }
     }
 }

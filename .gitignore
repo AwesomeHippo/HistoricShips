@@ -24,7 +24,7 @@ runs
 run-data
 logs
 repo
-assets
+assets2
 scripts
 .jdk
 *.sh

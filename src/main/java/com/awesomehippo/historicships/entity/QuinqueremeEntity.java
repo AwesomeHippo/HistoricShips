@@ -2,13 +2,48 @@ package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
 
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+
+import org.jetbrains.annotations.Nullable;
 
 public class QuinqueremeEntity extends OarShipEntity {
     public static final float MODEL_SCALE = 3.25F;
     public static final int MAX_PASSENGERS = 6;
+    public static final int CARGO_ROWS = 4;
+    public static final int MAX_ANIMALS = 4;
+    public static final int MAX_HULL = 55;
+    public static final int TOWER_COOLDOWN = 28;
+    private static final float U = MODEL_SCALE / 16.0F;
+    private static final float TOWER_MODEL_X = -18.0F;
+    private static final float TOWER_MUZZLE_Y = 13.6F;
+    private static final float STONE_SPEED = 1.55F;
+    private static final int VOLLEY = 3;
+
+    private int towerCooldown;
+
+    private static final float[][] CARGO_XZ = {
+        {6.0F, 0.0F},
+        {-2.0F, -2.2F},
+        {-2.0F, 2.2F},
+        {-14.0F, 0.0F},
+    };
 
     private static final OarShipStats STATS = new OarShipStats(
             MODEL_SCALE,
@@ -35,5 +70,161 @@ public class QuinqueremeEntity extends OarShipEntity {
     @Override
     protected OarShipStats stats() {
         return STATS;
+    }
+
+    @Override
+    protected int cargoRows() {
+        return CARGO_ROWS;
+    }
+
+    @Override
+    protected int getMaxHull() {
+        return MAX_HULL;
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.is(Items.LEAD)) {
+            if (player.isSecondaryUseActive()) {
+                if (ShipAnimalCargo.tryUnloadAnimals(player, this)) {
+                    return InteractionResult.SUCCESS;
+                }
+            } else if (ShipAnimalCargo.tryBoardLeashed(player, this, MAX_ANIMALS)) {
+                return InteractionResult.SUCCESS;
+            }
+        }
+        return super.interact(player, hand, hit);
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        if (passenger instanceof Player) {
+            return ShipAnimalCargo.countPlayers(this) < MAX_PASSENGERS;
+        }
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            return ShipAnimalCargo.countAnimals(this) < MAX_ANIMALS;
+        }
+        return false;
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        float seatY = this.stats().modelDeckY * this.stats().u + this.stats().seatYPad;
+        float modelX;
+        float modelZ;
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            int index = ShipAnimalCargo.animalIndex(this, passenger);
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= CARGO_XZ.length) {
+                index = CARGO_XZ.length - 1;
+            }
+            modelX = CARGO_XZ[index][0];
+            modelZ = CARGO_XZ[index][1];
+            seatY -= 0.10F;
+        } else {
+            int index = ShipAnimalCargo.playerIndex(this, passenger);
+            float[][] seats = this.stats().seatXz;
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= seats.length) {
+                index = seats.length - 1;
+            }
+            modelX = seats[index][0];
+            modelZ = seats[index][1];
+        }
+        return ShipAnimalCargo.seatOffset(this.getYRot(), modelX, modelZ, seatY, this.stats().u);
+    }
+
+    public int getAnimalCount() {
+        return ShipAnimalCargo.countAnimals(this);
+    }
+
+    public int getTowerCooldown() {
+        return this.towerCooldown;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.towerCooldown > 0) {
+            this.towerCooldown--;
+        }
+    }
+
+    public boolean tryFireTower() {
+        if (this.towerCooldown > 0) {
+            return false;
+        }
+        this.towerCooldown = TOWER_COOLDOWN;
+        if (this.level().isClientSide()) {
+            this.playTowerFireFx();
+        }
+        return true;
+    }
+
+    public void serverFireTower(@Nullable LivingEntity shooter) {
+        if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server)) {
+            return;
+        }
+        if (this.towerCooldown > 0) {
+            return;
+        }
+        this.towerCooldown = TOWER_COOLDOWN;
+
+        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
+        double bowX = Mth.sin(yaw);
+        double bowZ = -Mth.cos(yaw);
+        double stbdX = -bowZ;
+        double stbdZ = bowX;
+
+        double mx = this.getX() + bowX * (TOWER_MODEL_X * U);
+        double my = this.getY() + TOWER_MUZZLE_Y * U;
+        double mz = this.getZ() + bowZ * (TOWER_MODEL_X * U);
+
+        mx += bowX * 0.95;
+        mz += bowZ * 0.95;
+
+        Vec3 shipVel = this.getDeltaMovement();
+        for (int i = 0; i < VOLLEY; i++) {
+            double lat = (i - 1) * 0.22;
+            double ox = mx + stbdX * lat + (this.random.nextDouble() - 0.5) * 0.04;
+            double oy = my + this.random.nextDouble() * 0.08;
+            double oz = mz + stbdZ * lat + (this.random.nextDouble() - 0.5) * 0.04;
+
+            StoneBulletEntity stone = new StoneBulletEntity(server, ox, oy, oz, shooter);
+            stone.setSourceShip(this);
+            double spreadYaw = (i - 1) * 0.018 + (this.random.nextDouble() - 0.5) * 0.012;
+            double dirX = bowX * Math.cos(spreadYaw) - bowZ * Math.sin(spreadYaw);
+            double dirZ = bowX * Math.sin(spreadYaw) + bowZ * Math.cos(spreadYaw);
+            double up = 0.78 + this.random.nextDouble() * 0.10;
+            double spd = STONE_SPEED * (0.90 + this.random.nextDouble() * 0.08);
+            stone.setDeltaMovement(dirX * spd + shipVel.x * 0.45, up + shipVel.y * 0.1, dirZ * spd + shipVel.z * 0.45);
+            server.addFreshEntity(stone);
+        }
+
+        server.playSound(null, mx, my, mz, SoundEvents.STONE_BUTTON_CLICK_OFF, SoundSource.NEUTRAL, 0.9F, 0.45F);
+        server.playSound(null, mx, my, mz, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.NEUTRAL, 0.75F, 0.55F + this.random.nextFloat() * 0.1F);
+        server.playSound(null, mx, my, mz, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 0.8F, 0.7F);
+        server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + bowX * 0.4, my, mz + bowZ * 0.4, 12, 0.2, 0.12, 0.2, 0.05);
+    }
+
+    private void playTowerFireFx() {
+        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
+        double bowX = Mth.sin(yaw);
+        double bowZ = -Mth.cos(yaw);
+        double mx = this.getX() + bowX * (TOWER_MODEL_X * U) + bowX * 0.95;
+        double my = this.getY() + TOWER_MUZZLE_Y * U;
+        double mz = this.getZ() + bowZ * (TOWER_MODEL_X * U) + bowZ * 0.95;
+
+        this.level().playLocalSound(mx, my, mz, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 0.95F, 0.65F + this.random.nextFloat() * 0.15F, false);
+        this.level().playLocalSound(mx, my, mz, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.NEUTRAL, 0.7F, 0.5F, false);
+        for (int i = 0; i < 10; i++) {
+            this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + (this.random.nextDouble() - 0.5) * 0.4, my + this.random.nextDouble() * 0.25, mz + (this.random.nextDouble() - 0.5) * 0.4, bowX * 0.12, 0.04, bowZ * 0.12);
+            this.level().addParticle(ParticleTypes.CLOUD, mx + bowX * 0.2, my, mz + bowZ * 0.2, bowX * 0.08, 0.03, bowZ * 0.08);
+        }
     }
 }

@@ -310,15 +310,25 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
     }
 
     private static void addTower(PartDefinition body, String name, float x, float y, CubeDeformation d0) {
-        PartDefinition t = body.addOrReplaceChild(name, CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.4F, 0.0F, -2.4F, 4.8F, 5.0F, 4.8F, d0), PartPose.offset(x, y, 0.0F));
+        PartDefinition t = body.addOrReplaceChild(name, CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.55F, 0.0F, -2.55F, 5.1F, 5.4F, 5.1F, d0), PartPose.offset(x, y, 0.0F).withScale(1.22F));
 
-        t.addOrReplaceChild("arch", CubeListBuilder.create().texOffs(DARK, DARK_V).addBox(-1.2F, 0.4F, -2.55F, 2.4F, 2.6F, 0.35F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("band", CubeListBuilder.create().texOffs(IRON, IRON_V).addBox(-2.7F, 2.4F, -2.7F, 5.4F, 0.55F, 5.4F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("door", CubeListBuilder.create().texOffs(DARK, DARK_V).addBox(-1.15F, 0.35F, -2.72F, 2.3F, 2.7F, 0.35F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("slit_p", CubeListBuilder.create().texOffs(DARK, DARK_V).addBox(-2.72F, 3.0F, -0.7F, 0.35F, 1.6F, 1.4F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("slit_s", CubeListBuilder.create().texOffs(DARK, DARK_V).addBox(2.37F, 3.0F, -0.7F, 0.35F, 1.6F, 1.4F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("embrasure", CubeListBuilder.create().texOffs(DARK, DARK_V).addBox(2.35F, 3.15F, -1.0F, 0.4F, 1.5F, 2.0F, d0), PartPose.ZERO);
 
-        t.addOrReplaceChild("merlon_fl", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.5F, 4.8F, -2.5F, 1.4F, 1.5F, 1.4F, d0), PartPose.ZERO);
-        t.addOrReplaceChild("merlon_fr", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(1.1F, 4.8F, -2.5F, 1.4F, 1.5F, 1.4F, d0), PartPose.ZERO);
-        t.addOrReplaceChild("merlon_bl", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.5F, 4.8F, 1.1F, 1.4F, 1.5F, 1.4F, d0), PartPose.ZERO);
-        t.addOrReplaceChild("merlon_br", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(1.1F, 4.8F, 1.1F, 1.4F, 1.5F, 1.4F, d0), PartPose.ZERO);
-        t.addOrReplaceChild("cap", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.6F, 4.6F, -2.6F, 5.2F, 0.55F, 5.2F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("merlon_fl", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.65F, 5.2F, -2.65F, 1.5F, 1.7F, 1.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("merlon_fr", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(1.15F, 5.2F, -2.65F, 1.5F, 1.7F, 1.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("merlon_bl", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.65F, 5.2F, 1.15F, 1.5F, 1.7F, 1.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("merlon_br", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(1.15F, 5.2F, 1.15F, 1.5F, 1.7F, 1.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("cap", CubeListBuilder.create().texOffs(STONE, STONE_V).addBox(-2.75F, 5.0F, -2.75F, 5.5F, 0.5F, 5.5F, d0), PartPose.ZERO);
+
+        t.addOrReplaceChild("frame_base", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-1.6F, 5.45F, -0.9F, 3.2F, 0.4F, 1.8F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("frame_arm_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-1.55F, 5.7F, -0.25F, 0.4F, 1.5F, 0.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("frame_arm_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(1.15F, 5.7F, -0.25F, 0.4F, 1.5F, 0.5F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("frame_beam", CubeListBuilder.create().texOffs(IRON, IRON_V).addBox(-1.7F, 7.0F, -0.35F, 3.4F, 0.35F, 0.7F, d0), PartPose.ZERO);
+        t.addOrReplaceChild("sling", CubeListBuilder.create().texOffs(CREAM, CREAM_V).addBox(-0.45F, 6.3F, 0.15F, 0.9F, 0.9F, 1.1F, d0), PartPose.ZERO);
     }
 
     private static void addLineBetween(PartDefinition body, String name, float x0, float y0, float z0, float x1, float y1, float z1) {
@@ -358,9 +368,8 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         float fill = state.sailFill;
 
         for (int i = 0; i < OAR_PAIRS; i++) {
-            float stagger = i * 0.032F;
-            ShipOars.poseOar(this.oarsPort[i], true, phase, intensity, hard, REST_PITCH, stagger, 0.0F);
-            ShipOars.poseOar(this.oarsStbd[i], false, phase, intensity, hard, REST_PITCH, stagger, 0.0F);
+            ShipOars.poseOar(this.oarsPort[i], true, phase, intensity, hard, REST_PITCH);
+            ShipOars.poseOar(this.oarsStbd[i], false, phase, intensity, hard, REST_PITCH);
         }
 
         SquareSail.animate(this.sailRoot, this.sailCells, age, fill, SAIL_MAX_BELLY, 0.35F);

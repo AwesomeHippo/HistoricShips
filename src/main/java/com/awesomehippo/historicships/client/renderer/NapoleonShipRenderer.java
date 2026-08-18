@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
 public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, NapoleonShipRenderState> {
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("historicships", "textures/entity/napoleon_ship.png");
     public static final float SCALE = NapoleonShipEntity.MODEL_SCALE;
     private final NapoleonShipModel model;
 
@@ -26,8 +25,9 @@ public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, Nap
     @Override
     public void submit(NapoleonShipRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
         poseStack.pushPose();
-        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD);
-        submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD, state.sinkProgress, state.sinkRollDir);
+        Identifier texture = ShipDamageTextures.stage("napoleon_ship", state.damageStage);
+        submitNodeCollector.submitModel(this.model, state, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         poseStack.popPose();
         super.submit(state, poseStack, submitNodeCollector, camera);
     }
@@ -46,6 +46,9 @@ public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, Nap
         state.sailFill = entity.getSailFill();
         state.sailDeploy = entity.getSailDeploy();
         state.sailsFurled = entity.areSailsFurled();
+        state.damageStage = entity.getDamageStage();
+        state.sinkProgress = entity.getSinkProgress(partialTicks);
+        state.sinkRollDir = entity.getSinkRollDir();
         Minecraft mc = Minecraft.getInstance();
         state.localPassenger = mc.player != null && entity.hasPassenger(mc.player);
         state.helmCockpit = mc.options.getCameraType().isFirstPerson() && state.localPassenger && entity.isConductor(mc.player);

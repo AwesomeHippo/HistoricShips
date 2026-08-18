@@ -2,13 +2,30 @@ package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 public class DrakkarEntity extends OarShipEntity {
     public static final float MODEL_SCALE = 2.40F;
     public static final int MAX_PASSENGERS = 4;
+    public static final int CARGO_ROWS = 3;
+    public static final int MAX_HULL = 40;
+
+    private static final EntityDataAccessor<Byte> DATA_SAIL_STRIPE = SynchedEntityData.defineId(DrakkarEntity.class, EntityDataSerializers.BYTE);
 
     private static final OarShipStats STATS = new OarShipStats(
             MODEL_SCALE,
@@ -33,7 +50,61 @@ public class DrakkarEntity extends OarShipEntity {
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_SAIL_STRIPE, DrakkarSailStripe.RED.id());
+    }
+
+    @Override
     protected OarShipStats stats() {
         return STATS;
+    }
+
+    @Override
+    protected int cargoRows() {
+        return CARGO_ROWS;
+    }
+
+    @Override
+    protected int getMaxHull() {
+        return MAX_HULL;
+    }
+
+    public DrakkarSailStripe getSailStripe() {
+        return DrakkarSailStripe.byId(this.entityData.get(DATA_SAIL_STRIPE));
+    }
+
+    public void setSailStripe(DrakkarSailStripe stripe) {
+        this.entityData.set(DATA_SAIL_STRIPE, stripe.id());
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
+        ItemStack stack = player.getItemInHand(hand);
+        DyeColor dye = stack.get(DataComponents.DYE);
+        DrakkarSailStripe stripe = DrakkarSailStripe.fromDye(dye);
+        if (stripe != null && this.getSailStripe() != stripe) {
+            if (!this.level().isClientSide()) {
+                this.setSailStripe(stripe);
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        return super.interact(player, hand, hit);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.setSailStripe(DrakkarSailStripe.byId(input.getByteOr("SailStripe", DrakkarSailStripe.RED.id())));
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putByte("SailStripe", this.getSailStripe().id());
     }
 }

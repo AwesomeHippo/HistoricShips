@@ -7,17 +7,24 @@ import com.awesomehippo.historicships.client.model.QuinqueremeModel;
 import com.awesomehippo.historicships.client.renderer.DrakkarRenderer;
 import com.awesomehippo.historicships.client.renderer.NapoleonShipRenderer;
 import com.awesomehippo.historicships.client.renderer.QuinqueremeRenderer;
+import com.awesomehippo.historicships.client.screen.NapoleonEngineScreen;
 import com.awesomehippo.historicships.client.screen.ShipwrightScreen;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 import com.awesomehippo.historicships.entity.NapoleonShipEntity;
+import com.awesomehippo.historicships.entity.OarShipEntity;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
+import com.awesomehippo.historicships.entity.ShipAnimalCargo;
+import com.awesomehippo.historicships.entity.StoredShipEntity;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
+import com.awesomehippo.historicships.network.FireTowerStonePacket;
+import com.awesomehippo.historicships.network.OpenEnginePacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.api.distmarker.Dist;
@@ -72,6 +79,7 @@ public class NapoleonShipClient {
 
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(NapoleonShipMod.SHIPWRIGHT_MENU.get(), ShipwrightScreen::new);
+        event.register(NapoleonShipMod.ENGINE_MENU.get(), NapoleonEngineScreen::new);
     }
 
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -86,6 +94,7 @@ public class NapoleonShipClient {
         event.registerEntityRenderer(NapoleonShipMod.QUINQUEREME_ENTITY.get(), QuinqueremeRenderer::new);
 
         event.registerEntityRenderer(NapoleonShipMod.CANNONBALL_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 4.6F, true));
+        event.registerEntityRenderer(NapoleonShipMod.STONE_BULLET_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 3.4F, true));
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
@@ -94,21 +103,32 @@ public class NapoleonShipClient {
             return;
         }
         LocalPlayer player = mc.player;
-        if (!(player.getVehicle() instanceof NapoleonShipEntity ship)) {
-            return;
-        }
-
-        if (!ship.isConductor(player)) {
-            return;
-        }
-
-        if (NapoleonShipKeys.FIRE_ALL.consumeClick()) {
-            if (ship.tryFireAll()) {
-                ClientPacketDistributor.sendToServer(new FireBowShellPacket(ship.getId()));
+        if (player.getVehicle() instanceof NapoleonShipEntity napoleon) {
+            if (NapoleonShipKeys.OPEN_ENGINE.consumeClick()) {
+                ClientPacketDistributor.sendToServer(new OpenEnginePacket(napoleon.getId()));
             }
+            if (!napoleon.isConductor(player)) {
+                return;
+            }
+            if (NapoleonShipKeys.FIRE_ALL.consumeClick()) {
+                if (napoleon.tryFireAll()) {
+                    ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId()));
+                }
+            }
+            if (NapoleonShipKeys.TOGGLE_SAILS.consumeClick()) {
+                napoleon.toggleSails();
+            }
+            return;
         }
-        if (NapoleonShipKeys.TOGGLE_SAILS.consumeClick()) {
-            ship.toggleSails();
+        if (player.getVehicle() instanceof QuinqueremeEntity quin) {
+            if (!quin.isConductor(player)) {
+                return;
+            }
+            if (NapoleonShipKeys.FIRE_ALL.consumeClick()) {
+                if (quin.tryFireTower()) {
+                    ClientPacketDistributor.sendToServer(new FireTowerStonePacket(quin.getId()));
+                }
+            }
         }
     }
 
@@ -155,23 +175,23 @@ public class NapoleonShipClient {
             if (ship.isConductor(player)) {
                 drawConductorPanel(g, font, sw, ship);
             } else {
-                drawPassengerPanel(g, font, sw, "Passenger", ship.getPassengers().size() + "/" + NapoleonShipEntity.MAX_PASSENGERS, formatSpeed(ship));
+                drawPassengerPanel(g, font, sw, ship, formatSpeedLine(ship, ship.isBoosting()), ShipAnimalCargo.countPlayers(ship), NapoleonShipEntity.MAX_PASSENGERS, ship.getAnimalCount(), NapoleonShipEntity.MAX_ANIMALS);
             }
             return;
         }
         if (vehicle instanceof DrakkarEntity ship) {
             if (ship.isConductor(player)) {
-                drawOarShipPanel(g, font, sw, "Drakkar", ship.isHardRowing(), ship.getPassengers().size(), DrakkarEntity.MAX_PASSENGERS, formatSpeed(ship));
+                drawOarShipPanel(g, font, sw, tr("entity.historicships.drakkar"), ship, ship.getPassengers().size(), DrakkarEntity.MAX_PASSENGERS, -1, 0);
             } else {
-                drawPassengerPanel(g, font, sw, "Passenger", ship.getPassengers().size() + "/" + DrakkarEntity.MAX_PASSENGERS, formatSpeed(ship));
+                drawPassengerPanel(g, font, sw, ship, formatSpeedLine(ship, oarSpeeding(ship)), ship.getPassengers().size(), DrakkarEntity.MAX_PASSENGERS, -1, 0);
             }
             return;
         }
         if (vehicle instanceof QuinqueremeEntity ship) {
             if (ship.isConductor(player)) {
-                drawOarShipPanel(g, font, sw, "Quinquereme", ship.isHardRowing(), ship.getPassengers().size(), QuinqueremeEntity.MAX_PASSENGERS, formatSpeed(ship));
+                drawQuinqueremePanel(g, font, sw, ship);
             } else {
-                drawPassengerPanel(g, font, sw, "Passenger", ship.getPassengers().size() + "/" + QuinqueremeEntity.MAX_PASSENGERS, formatSpeed(ship));
+                drawPassengerPanel(g, font, sw, ship, formatSpeedLine(ship, oarSpeeding(ship)), ShipAnimalCargo.countPlayers(ship), QuinqueremeEntity.MAX_PASSENGERS, ship.getAnimalCount(), QuinqueremeEntity.MAX_ANIMALS);
             }
         }
     }
@@ -220,71 +240,128 @@ public class NapoleonShipClient {
         return String.format(java.util.Locale.ROOT, "%.0f b/s", bps);
     }
 
-    private void drawOarShipPanel(GuiGraphicsExtractor g, Font font, int sw, String title, boolean hardRowing, int crew, int maxCrew, String speed) {
-        drawPanel(g, font, sw, title, new String[][] { {"Move", moveKeys()}, {"Full speed", sprintKey()}, {"Status", hardRowing ? "Full speed" : "Normal Speed"}, {"Speed", speed}, {"Crew", crew + "/" + maxCrew} });
+    private String formatSpeedLine(Entity vehicle, boolean speeding) {
+        return tr("gui.historicships.hud.speed_mode", formatSpeed(vehicle), tr(speeding ? "gui.historicships.hud.fast" : "gui.historicships.hud.normal"));
+    }
+
+    private static boolean oarSpeeding(OarShipEntity ship) {
+        return ship.isHardRowing() || ship.getHardAmount(0.0F) > 0.5F;
+    }
+
+    private void drawOarShipPanel(GuiGraphicsExtractor g, Font font, int sw, String title, StoredShipEntity ship, int crew, int maxCrew, int animals, int maxAnimals) {
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        boolean speeding = ship instanceof OarShipEntity oar && oarSpeeding(oar);
+        rows.add(new String[] {tr("gui.historicships.hud.speed"), formatSpeedLine(ship, speeding)});
+        rows.add(new String[] {tr("gui.historicships.hud.hull"), formatHull(ship)});
+        rows.add(new String[] {tr("gui.historicships.hud.crew"), crew + "/" + maxCrew});
+        if (maxAnimals > 0) {
+            rows.add(new String[] {tr("gui.historicships.hud.animals"), animals + "/" + maxAnimals});
+        }
+        rows.add(new String[] {tr("gui.historicships.hud.cargo"), cargoKeys()});
+        drawPanel(g, font, sw, panelTitle(ship, title), rows.toArray(new String[0][]));
+    }
+
+    private void drawQuinqueremePanel(GuiGraphicsExtractor g, Font font, int sw, QuinqueremeEntity ship) {
+        String kFire = NapoleonShipKeys.FIRE_ALL.getTranslatedKeyMessage().getString();
+        String tower = ship.getTowerCooldown() > 0
+                ? tr("gui.historicships.hud.weapon_wait", kFire, ship.getTowerCooldown() / 20 + 1)
+                : tr("gui.historicships.hud.weapon_ready", kFire);
+        drawPanel(g, font, sw, panelTitle(ship, tr("entity.historicships.quinquereme")), new String[][] {
+            {tr("gui.historicships.hud.speed"), formatSpeedLine(ship, oarSpeeding(ship))},
+            {tr("gui.historicships.hud.hull"), formatHull(ship)},
+            {tr("gui.historicships.hud.crew"), ShipAnimalCargo.countPlayers(ship) + "/" + QuinqueremeEntity.MAX_PASSENGERS},
+            {tr("gui.historicships.hud.animals"), ship.getAnimalCount() + "/" + QuinqueremeEntity.MAX_ANIMALS},
+            {tr("gui.historicships.hud.tower"), tower},
+            {tr("gui.historicships.hud.cargo"), cargoKeys()}
+        });
     }
 
     private void drawConductorPanel(GuiGraphicsExtractor g, Font font, int sw, NapoleonShipEntity ship) {
         String kFire = NapoleonShipKeys.FIRE_ALL.getTranslatedKeyMessage().getString();
         String kSail = NapoleonShipKeys.TOGGLE_SAILS.getTranslatedKeyMessage().getString();
+        String kEngine = NapoleonShipKeys.OPEN_ENGINE.getTranslatedKeyMessage().getString();
 
-        String sailLabel = ship.areSailsFurled() ? "Set Sails" : "Furl Sails";
-        String sailValue = kSail;
+        String guns = ship.getBroadsideCooldown() > 0
+                ? tr("gui.historicships.hud.weapon_wait", kFire, ship.getBroadsideCooldown() / 20 + 1)
+                : tr("gui.historicships.hud.weapon_ready", kFire);
 
-        boolean sailsOpen = !ship.areSailsFurled();
-        String status;
-        if (ship.getBroadsideCooldown() > 0) {
-            status = "Reload " + (ship.getBroadsideCooldown() / 20 + 1) + "s";
-        } else if (ship.isBoosting()) {
-            status = sailsOpen ? "Full speed - Sails" : "Full speed";
-        } else if (sailsOpen) {
-            status = "Normal - Sails";
-        } else {
-            status = "Normal Speed";
-        }
-
-        drawPanel(g, font, sw, "Napoleon", new String[][] { {"Move", moveKeys()}, {"Full speed", sprintKey()}, {"Fire all", kFire}, {sailLabel, sailValue}, {"Status", status}, {"Speed", formatSpeed(ship)}, {"Crew", ship.getPassengers().size() + "/" + NapoleonShipEntity.MAX_PASSENGERS} });
+        String sails = tr(ship.areSailsFurled() ? "gui.historicships.hud.sails_furled" : "gui.historicships.hud.sails_open", kSail);
+        int crew = ShipAnimalCargo.countPlayers(ship);
+        drawPanel(g, font, sw, panelTitle(ship, tr("entity.historicships.napoleon_ship")), new String[][] {
+            {tr("gui.historicships.hud.speed"), formatSpeedLine(ship, ship.isBoosting())},
+            {tr("gui.historicships.hud.hull"), formatHull(ship)},
+            {tr("gui.historicships.hud.crew"), crew + "/" + NapoleonShipEntity.MAX_PASSENGERS},
+            {tr("gui.historicships.hud.animals"), ship.getAnimalCount() + "/" + NapoleonShipEntity.MAX_ANIMALS},
+            {tr("gui.historicships.hud.guns"), guns},
+            {tr("gui.historicships.hud.sails"), sails},
+            {tr("gui.historicships.hud.engine"), tr("gui.historicships.hud.engine_value", kEngine, engineStatus(ship))},
+            {tr("gui.historicships.hud.cargo"), cargoKeys()}
+        });
     }
 
-    private static String moveKeys() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc == null || mc.options == null) {
-            return "?";
-        }
-        String f = keyName(mc.options.keyUp);
-        String l = keyName(mc.options.keyLeft);
-        String b = keyName(mc.options.keyDown);
-        String r = keyName(mc.options.keyRight);
-
-        if (f.length() == 1 && l.length() == 1 && b.length() == 1 && r.length() == 1) {
-            return f + l + b + r;
-        }
-        return f + " / " + l + " / " + b + " / " + r;
+    private static String formatHull(StoredShipEntity ship) {
+        return ship.getHullPercent() + "%";
     }
 
-    private static String sprintKey() {
+    private static String engineStatus(NapoleonShipEntity ship) {
+        if (ship.getWaterLevel() <= 0) {
+            return tr("gui.historicships.hud.no_water");
+        }
+        if (ship.canSteamBoost()) {
+            return tr("gui.historicships.hud.ready");
+        }
+        return tr("gui.historicships.hud.need_coal");
+    }
+
+    private static String panelTitle(StoredShipEntity ship, String title) {
+        return ship.isSinking() ? tr("gui.historicships.hud.sinking", title) : title;
+    }
+
+    private static String cargoKeys() {
         Minecraft mc = Minecraft.getInstance();
         if (mc == null || mc.options == null) {
-            return "?";
+            return tr("gui.historicships.hud.shift_use");
         }
-        return keyName(mc.options.keySprint);
+        return tr("gui.historicships.hud.cargo_keys", tr("gui.historicships.hud.shift_use"), keyName(mc.options.keyInventory));
+    }
+
+    private static String tr(String key) {
+        return Component.translatable(key).getString();
+    }
+
+    private static String tr(String key, Object... args) {
+        return Component.translatable(key, args).getString();
     }
 
     private static String keyName(net.minecraft.client.KeyMapping mapping) {
         return mapping.getTranslatedKeyMessage().getString();
     }
 
-    private void drawPassengerPanel(GuiGraphicsExtractor g, Font font, int sw, String title, String crewLine, String speed) {
-        drawPanel(g, font, sw, title, new String[][] { {"Speed", speed}, {"Crew", crewLine} });
+    private void drawPassengerPanel(GuiGraphicsExtractor g, Font font, int sw, StoredShipEntity ship, String speed, int crew, int maxCrew, int animals, int maxAnimals) {
+        java.util.List<String[]> rows = new java.util.ArrayList<>();
+        rows.add(new String[] {tr("gui.historicships.hud.speed"), speed});
+        rows.add(new String[] {tr("gui.historicships.hud.hull"), formatHull(ship)});
+        rows.add(new String[] {tr("gui.historicships.hud.crew"), crew + "/" + maxCrew});
+        if (maxAnimals > 0) {
+            rows.add(new String[] {tr("gui.historicships.hud.animals"), animals + "/" + maxAnimals});
+        }
+        drawPanel(g, font, sw, panelTitle(ship, tr("gui.historicships.hud.passenger")), rows.toArray(new String[0][]));
     }
 
     private void drawPanel(GuiGraphicsExtractor g, Font font, int sw, String title, String[][] rows) {
         final int padX = 6;
-        final int padY = 5;
+        final int padY = 4;
         final int lineH = font.lineHeight + 1;
+        final int gap = 8;
 
-        final int boxW = 128;
-        final int boxH = padY * 2 + lineH * (1 + rows.length) + 2;
+        int maxLabel = font.width(title);
+        int maxValue = 0;
+        for (String[] row : rows) {
+            maxLabel = Math.max(maxLabel, font.width(row[0]));
+            maxValue = Math.max(maxValue, font.width(row[1]));
+        }
+        final int boxW = Math.min(152, Math.max(108, padX * 2 + maxLabel + gap + maxValue));
+        final int boxH = padY * 2 + lineH * (1 + rows.length) + 1;
         final int boxX = sw - boxW - 5;
         final int boxY = 5;
 
@@ -292,7 +369,7 @@ public class NapoleonShipClient {
 
         int y = boxY + padY;
         g.text(font, title, boxX + padX, y, 0xFFFFFFFF, true);
-        y += lineH + 2;
+        y += lineH + 1;
 
         int valueRight = boxX + boxW - padX;
         for (String[] row : rows) {

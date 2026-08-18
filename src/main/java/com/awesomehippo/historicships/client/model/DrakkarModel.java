@@ -250,9 +250,8 @@ public class DrakkarModel extends EntityModel<OarShipRenderState> {
         float fill = state.sailFill;
 
         for (int i = 0; i < OAR_PAIRS; i++) {
-            float stagger = i * 0.06F;
-            ShipOars.poseOar(this.oarsPort[i], true, phase, intensity, hard, OAR_REST_PITCH, stagger, 0.0F);
-            ShipOars.poseOar(this.oarsStbd[i], false, phase, intensity, hard, OAR_REST_PITCH, stagger, 0.0F);
+            ShipOars.poseOar(this.oarsPort[i], true, phase, intensity, hard, OAR_REST_PITCH);
+            ShipOars.poseOar(this.oarsStbd[i], false, phase, intensity, hard, OAR_REST_PITCH);
         }
 
         SquareSail.animate(this.sailRoot, this.sailCells, age, fill, SAIL_MAX_BELLY, 0.3F, 0.55F, 0.90F, 0.06F);

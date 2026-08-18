@@ -11,4 +11,7 @@ public class NapoleonShipRenderState extends EntityRenderState {
     public boolean sailsFurled;
     public boolean helmCockpit;
     public boolean localPassenger;
+    public int damageStage;
+    public float sinkProgress;
+    public float sinkRollDir;
 }

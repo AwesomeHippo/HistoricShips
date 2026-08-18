@@ -1,23 +1,36 @@
 package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
 
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -26,9 +39,12 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-public class NapoleonShipEntity extends Entity {
+public class NapoleonShipEntity extends StoredShipEntity {
 
     public static final float MODEL_SCALE = 3.55F;
+    public static final int CARGO_ROWS = 6;
+    public static final int MAX_ANIMALS = 4;
+    public static final int MAX_HULL = 80;
     private static final float U = MODEL_SCALE / 16.0F;
     private static final float HALF_BEAM = 11.0F * U + 0.08F;
     private static final float HALF_LOA = 56.5F * U;
@@ -48,6 +64,12 @@ public class NapoleonShipEntity extends Entity {
         {8.0F, -4.0F},
         {8.0F, 4.0F},
         {-34.0F, 0.0F},
+    };
+    private static final float[][] CARGO_XZ = {
+        {8.0F, 0.0F},
+        {0.0F, -3.5F},
+        {0.0F, 3.5F},
+        {-12.0F, 0.0F},
     };
     private float deltaRotation;
     private float steerSmoothed;
@@ -78,6 +100,53 @@ public class NapoleonShipEntity extends Entity {
     private static final float STEER_SMOOTH = 0.40F;
     private static final float BOW_SHELL_SPEED = 4.65F;
 
+    public static final int MAX_WATER = 4000;
+    public static final int WATER_PER_BUCKET = 1000;
+    public static final int MIN_BOOST_PRESSURE = 22;
+    private static final EntityDataAccessor<Integer> DATA_WATER = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PRESSURE = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.INT);
+
+    private final SimpleContainer engineItems = new SimpleContainer(NapoleonEngineMenu.ENGINE_SLOTS) {
+        @Override
+        public boolean stillValid(Player player) {
+            return NapoleonShipEntity.this.isAlive() && player.distanceToSqr(NapoleonShipEntity.this) < 4096.0D;
+        }
+    };
+    private int waterLevel = MAX_WATER / 2;
+    private int litTime;
+    private int litDuration;
+    private int pressure;
+    private final ContainerData engineData = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case NapoleonEngineMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel;
+                case NapoleonEngineMenu.DATA_MAX_WATER -> MAX_WATER;
+                case NapoleonEngineMenu.DATA_LIT -> NapoleonShipEntity.this.litTime;
+                case NapoleonEngineMenu.DATA_LIT_TOTAL -> Math.max(1, NapoleonShipEntity.this.litDuration);
+                case NapoleonEngineMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            switch (index) {
+                case NapoleonEngineMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel = value;
+                case NapoleonEngineMenu.DATA_LIT -> NapoleonShipEntity.this.litTime = value;
+                case NapoleonEngineMenu.DATA_LIT_TOTAL -> NapoleonShipEntity.this.litDuration = value;
+                case NapoleonEngineMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure = value;
+                default -> {
+                }
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return NapoleonEngineMenu.DATA_COUNT;
+        }
+    };
+
     public NapoleonShipEntity(EntityType<? extends NapoleonShipEntity> type, Level level) {
         super(type, level);
         this.blocksBuilding = true;
@@ -92,7 +161,16 @@ public class NapoleonShipEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_WATER, MAX_WATER / 2);
+        builder.define(DATA_PRESSURE, 0);
+    }
+
+    @Override
+    protected int getMaxHull() {
+        return MAX_HULL;
+    }
 
     @Override
     protected AABB makeBoundingBox(Vec3 pos) {
@@ -147,47 +225,80 @@ public class NapoleonShipEntity extends Entity {
     }
 
     @Override
+    protected int cargoRows() {
+        return CARGO_ROWS;
+    }
+
+    @Override
+    protected ItemStack createDropStack() {
+        return new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get());
+    }
+
+    @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
-        if (player.isSecondaryUseActive()) {
-            return InteractionResult.PASS;
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.is(Items.LEAD)) {
+            if (player.isSecondaryUseActive()) {
+                if (ShipAnimalCargo.tryUnloadAnimals(player, this)) {
+                    return InteractionResult.SUCCESS;
+                }
+            } else if (ShipAnimalCargo.tryBoardLeashed(player, this, MAX_ANIMALS)) {
+                return InteractionResult.SUCCESS;
+            }
         }
-        if (!this.level().isClientSide()) {
-            return player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
-        }
-        return InteractionResult.SUCCESS;
+        return super.interact(player, hand, hit);
     }
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().size() < MAX_PASSENGERS;
+        if (passenger instanceof Player) {
+            return ShipAnimalCargo.countPlayers(this) < MAX_PASSENGERS;
+        }
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            return ShipAnimalCargo.countAnimals(this) < MAX_ANIMALS;
+        }
+        return false;
     }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
         final float modelDeckY = 13.0F;
-
         final float waterlinePad = 0.55F;
         float seatY = modelDeckY * U + waterlinePad;
 
-        int index = this.getPassengers().indexOf(passenger);
-        if (index < 0) {
-            index = this.getPassengers().size();
+        float modelX;
+        float modelZ;
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            int index = ShipAnimalCargo.animalIndex(this, passenger);
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= CARGO_XZ.length) {
+                index = CARGO_XZ.length - 1;
+            }
+            modelX = CARGO_XZ[index][0];
+            modelZ = CARGO_XZ[index][1];
+            seatY -= 0.15F;
+        } else {
+            int index = ShipAnimalCargo.playerIndex(this, passenger);
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= SEAT_XZ.length) {
+                index = SEAT_XZ.length - 1;
+            }
+            modelX = SEAT_XZ[index][0];
+            modelZ = SEAT_XZ[index][1];
         }
-        if (index >= SEAT_XZ.length) {
-            index = SEAT_XZ.length - 1;
-        }
-
-        float modelX = SEAT_XZ[index][0];
-        float modelZ = SEAT_XZ[index][1];
-
-        // (forward is negated)
-        float localForward = -(modelX * U);
-        float localRight = modelZ * U;
-        return new Vec3(localRight, seatY, localForward).yRot(-this.getYRot() * ((float) Math.PI / 180.0F));
+        return ShipAnimalCargo.seatOffset(this.getYRot(), modelX, modelZ, seatY, U);
     }
 
     public boolean isConductor(Entity passenger) {
         return this.getControllingPassenger() == passenger;
+    }
+
+    public int getAnimalCount() {
+        return ShipAnimalCargo.countAnimals(this);
     }
 
     @Override
@@ -196,7 +307,14 @@ public class NapoleonShipEntity extends Entity {
         this.tickLerp();
         this.helmAngleO = this.helmAngle;
 
-        if (this.isLocalInstanceAuthoritative()) {
+        if (!this.level().isClientSide()) {
+            this.tickEngine();
+        }
+
+        if (this.isSinking()) {
+            this.applySinkMotion();
+            this.move(MoverType.SELF, this.getDeltaMovement());
+        } else if (this.isLocalInstanceAuthoritative()) {
             this.updateWaterContact();
             this.applyBuoyancy();
             if (this.level().isClientSide()) {
@@ -291,13 +409,21 @@ public class NapoleonShipEntity extends Entity {
         double speed = this.getDeltaMovement().horizontalDistance();
         boolean underWay = speed > 0.02;
         boolean boost = this.boosting;
+        float steam = this.getPressure() / 100.0F;
+        if (steam < 0.05F && !boost) {
+            if (this.random.nextInt(8) != 0) {
+                return;
+            }
+        }
         int puffsPerStack;
         if (boost) {
             puffsPerStack = 4 + this.random.nextInt(2);
-        } else if (underWay) {
+        } else if (steam > 0.35F) {
             puffsPerStack = 2 + this.random.nextInt(2);
+        } else if (underWay || steam > 0.1F) {
+            puffsPerStack = 1 + this.random.nextInt(2);
         } else {
-            puffsPerStack = this.random.nextInt(3) == 0 ? 1 : 0;
+            puffsPerStack = this.random.nextInt(4) == 0 ? 1 : 0;
         }
         if (puffsPerStack <= 0) {
             return;
@@ -487,7 +613,7 @@ public class NapoleonShipEntity extends Entity {
             this.steerSmoothed += (0.0F - this.steerSmoothed) * 0.25F;
             return;
         }
-        Entity controller = this.getFirstPassenger();
+        Entity controller = this.getControllingPassenger();
         if (!(controller instanceof Player player)) {
             this.helmAngle += (0.0F - this.helmAngle) * 0.2F;
             this.steerSmoothed += (0.0F - this.steerSmoothed) * 0.25F;
@@ -503,7 +629,8 @@ public class NapoleonShipEntity extends Entity {
         }
         float thrustDir = -forwardKey;
 
-        this.boosting = OarShipEntity.wantsSprint(player) && forwardKey > 0.05F;
+        boolean wantsBoost = OarShipEntity.wantsSprint(player) && forwardKey > 0.05F;
+        this.boosting = wantsBoost && this.canSteamBoost();
         this.tickSmoothedMaxSpeed(this.rawWaterMaxSpeed());
 
         this.steerSmoothed += (inputLeft - this.steerSmoothed) * STEER_SMOOTH;
@@ -661,6 +788,7 @@ public class NapoleonShipEntity extends Entity {
             double ox = this.getX() + bowX * bowDist + stbdX * lat;
             double oz = this.getZ() + bowZ * bowDist + stbdZ * lat;
             CannonballEntity shell = new CannonballEntity(server, ox, gunY, oz, shooter);
+            shell.setSourceShip(this);
 
             double up = 0.06 + this.random.nextDouble() * 0.03;
             shell.setDeltaMovement(bowX * BOW_SHELL_SPEED + shipVel.x * 0.85, up + shipVel.y * 0.15, bowZ * BOW_SHELL_SPEED + shipVel.z * 0.85);
@@ -692,23 +820,180 @@ public class NapoleonShipEntity extends Entity {
     @Nullable
     @Override
     public LivingEntity getControllingPassenger() {
-        Entity e = this.getFirstPassenger();
-        return e instanceof LivingEntity living ? living : super.getControllingPassenger();
+        LivingEntity player = ShipAnimalCargo.firstPlayer(this);
+        return player != null ? player : super.getControllingPassenger();
     }
 
-    @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
-        if (this.isInvulnerable()) {
+    public SimpleContainer getEngineContainer() {
+        return this.engineItems;
+    }
+
+    public ContainerData getEngineData() {
+        return this.engineData;
+    }
+
+    public static boolean isEngineFuel(ItemStack stack) {
+        if (stack.isEmpty()) {
             return false;
         }
-        this.spawnAtLocation(level, new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get()));
-        this.kill(level);
-        return true;
+        return stack.is(Items.COAL) || stack.is(Items.CHARCOAL) || stack.is(Items.COAL_BLOCK);
+    }
+
+    public static int engineBurnTime(ItemStack stack) {
+        if (stack.is(Items.COAL_BLOCK)) {
+            return 16000;
+        }
+        if (stack.is(Items.COAL) || stack.is(Items.CHARCOAL)) {
+            return 1600;
+        }
+        return 0;
+    }
+
+    public int getWaterLevel() {
+        return this.level().isClientSide() ? this.entityData.get(DATA_WATER) : this.waterLevel;
+    }
+
+    public int getPressure() {
+        return this.level().isClientSide() ? this.entityData.get(DATA_PRESSURE) : this.pressure;
+    }
+
+    public boolean canSteamBoost() {
+        return this.getPressure() >= MIN_BOOST_PRESSURE && this.getWaterLevel() > 0;
+    }
+
+    public void openEngineMenu(Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+        serverPlayer.openMenu(new MenuProvider() {
+            @Override
+            public Component getDisplayName() {
+                return Component.translatable("container.historicships.engine");
+            }
+
+            @Override
+            public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
+                return new NapoleonEngineMenu(id, inv, NapoleonShipEntity.this);
+            }
+        }, buf -> buf.writeVarInt(NapoleonShipEntity.this.getId()));
+    }
+
+    private void syncEngineData() {
+        this.entityData.set(DATA_WATER, this.waterLevel);
+        this.entityData.set(DATA_PRESSURE, this.pressure);
+    }
+
+    private void tickEngine() {
+        this.tryAcceptWaterBucket();
+        boolean wasLit = this.litTime > 0;
+
+        boolean hardSteam = this.serverHardSteam();
+        if (this.litTime > 0) {
+            this.litTime--;
+            if (this.waterLevel > 0) {
+                if (this.tickCount % 6 == 0) {
+                    this.waterLevel = Math.max(0, this.waterLevel - 1);
+                }
+                if (this.tickCount % 3 == 0) {
+                    this.pressure = Math.min(100, this.pressure + 1);
+                }
+                if (hardSteam && this.tickCount % 2 == 0) {
+                    this.waterLevel = Math.max(0, this.waterLevel - 1);
+                }
+            } else {
+                if (this.tickCount % 4 == 0) {
+                    this.pressure = Math.max(0, this.pressure - 2);
+                }
+            }
+        } else {
+            this.tryLightFuel();
+            if (this.tickCount % 8 == 0) {
+                this.pressure = Math.max(0, this.pressure - 1);
+            }
+        }
+
+        if (hardSteam && this.pressure > 0 && this.tickCount % 5 == 0) {
+            this.pressure = Math.max(0, this.pressure - 1);
+        }
+
+        if (wasLit != (this.litTime > 0) || this.tickCount % 5 == 0) {
+            this.syncEngineData();
+        }
+    }
+
+    private boolean serverHardSteam() {
+        if (!(this.getControllingPassenger() instanceof Player player)) {
+            return false;
+        }
+        return player.isSprinting() && this.waterLevel > 0 && this.pressure >= MIN_BOOST_PRESSURE;
+    }
+
+    private void tryAcceptWaterBucket() {
+        ItemStack stack = this.engineItems.getItem(NapoleonEngineMenu.WATER_SLOT);
+        if (!stack.is(Items.WATER_BUCKET) || this.waterLevel >= MAX_WATER) {
+            return;
+        }
+        this.waterLevel = Math.min(MAX_WATER, this.waterLevel + WATER_PER_BUCKET);
+        this.engineItems.setItem(NapoleonEngineMenu.WATER_SLOT, new ItemStack(Items.BUCKET));
+        this.engineItems.setChanged();
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6F, 1.0F);
+    }
+
+    private void tryLightFuel() {
+        if (this.waterLevel <= 0) {
+            return;
+        }
+        ItemStack fuel = this.engineItems.getItem(NapoleonEngineMenu.FUEL_SLOT);
+        int burn = engineBurnTime(fuel);
+        if (burn <= 0) {
+            return;
+        }
+        fuel.shrink(1);
+        if (fuel.isEmpty()) {
+            this.engineItems.setItem(NapoleonEngineMenu.FUEL_SLOT, ItemStack.EMPTY);
+        } else {
+            this.engineItems.setItem(NapoleonEngineMenu.FUEL_SLOT, fuel);
+        }
+        this.litTime = burn;
+        this.litDuration = burn;
+        this.engineItems.setChanged();
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.35F, 0.8F);
     }
 
     @Override
-    protected void readAdditionalSaveData(ValueInput input) {}
+    public void remove(Entity.RemovalReason reason) {
+        if (!this.level().isClientSide() && reason.shouldDestroy()) {
+            Containers.dropContents(this.level(), this, this.engineItems);
+        }
+        super.remove(reason);
+    }
 
     @Override
-    protected void addAdditionalSaveData(ValueOutput output) {}
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonEngineMenu.ENGINE_SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input.childOrEmpty("EngineItems"), items);
+        for (int i = 0; i < items.size(); i++) {
+            this.engineItems.setItem(i, items.get(i));
+        }
+        this.waterLevel = input.getIntOr("BoilerWater", MAX_WATER / 2);
+        this.litTime = input.getIntOr("LitTime", 0);
+        this.litDuration = input.getIntOr("LitDuration", 0);
+        this.pressure = input.getIntOr("Pressure", 0);
+        this.syncEngineData();
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonEngineMenu.ENGINE_SLOTS, ItemStack.EMPTY);
+        for (int i = 0; i < NapoleonEngineMenu.ENGINE_SLOTS; i++) {
+            items.set(i, this.engineItems.getItem(i));
+        }
+        ContainerHelper.saveAllItems(output.child("EngineItems"), items);
+        output.putInt("BoilerWater", this.waterLevel);
+        output.putInt("LitTime", this.litTime);
+        output.putInt("LitDuration", this.litDuration);
+        output.putInt("Pressure", this.pressure);
+    }
 }

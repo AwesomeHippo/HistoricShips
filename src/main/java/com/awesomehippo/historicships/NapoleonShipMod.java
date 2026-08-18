@@ -6,13 +6,18 @@ import com.awesomehippo.historicships.entity.CannonballEntity;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 import com.awesomehippo.historicships.entity.NapoleonShipEntity;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
+import com.awesomehippo.historicships.entity.StoneBulletEntity;
 import com.awesomehippo.historicships.item.DrakkarItem;
 import com.awesomehippo.historicships.item.NapoleonShipItem;
 import com.awesomehippo.historicships.item.QuinqueremeItem;
+import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
 import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
+import com.awesomehippo.historicships.network.FireTowerStonePacket;
+import com.awesomehippo.historicships.network.OpenEnginePacket;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.MenuType;
@@ -47,11 +52,20 @@ public class NapoleonShipMod {
     public static final DeferredHolder<EntityType<?>, EntityType<DrakkarEntity>> DRAKKAR_ENTITY = ENTITIES.registerEntityType("drakkar", DrakkarEntity::new, MobCategory.MISC, builder -> builder.sized(14.0F, 10.0F).clientTrackingRange(48).updateInterval(3).fireImmune());
     public static final DeferredHolder<EntityType<?>, EntityType<QuinqueremeEntity>> QUINQUEREME_ENTITY = ENTITIES.registerEntityType("quinquereme", QuinqueremeEntity::new, MobCategory.MISC, builder -> builder.sized(18.0F, 8.0F).clientTrackingRange(64).updateInterval(3).fireImmune());
     public static final DeferredHolder<EntityType<?>, EntityType<CannonballEntity>> CANNONBALL_ENTITY = ENTITIES.registerEntityType("cannonball", CannonballEntity::new, MobCategory.MISC, builder -> builder.sized(0.95F, 0.95F).clientTrackingRange(20).updateInterval(1).fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<StoneBulletEntity>> STONE_BULLET_ENTITY = ENTITIES.registerEntityType("stone_bullet", StoneBulletEntity::new, MobCategory.MISC, builder -> builder.sized(0.72F, 0.72F).clientTrackingRange(24).updateInterval(1).fireImmune());
 
     public static final DeferredBlock<ShipwrightWorkbenchBlock> SHIPWRIGHT_WORKBENCH = BLOCKS.registerBlock("shipwright_workbench", ShipwrightWorkbenchBlock::new, () -> BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).ignitedByLava().noOcclusion());
     public static final DeferredItem<BlockItem> SHIPWRIGHT_WORKBENCH_ITEM = ITEMS.registerSimpleBlockItem(SHIPWRIGHT_WORKBENCH);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipwrightWorkbenchBlockEntity>> SHIPWRIGHT_WORKBENCH_BE = BLOCK_ENTITIES.register("shipwright_workbench", () -> new BlockEntityType<>(ShipwrightWorkbenchBlockEntity::new, SHIPWRIGHT_WORKBENCH.get()));
     public static final DeferredHolder<MenuType<?>, MenuType<ShipwrightMenu>> SHIPWRIGHT_MENU = MENUS.register("shipwright", () -> IMenuTypeExtension.create((id, inv, buf) -> new ShipwrightMenu(id, inv)));
+    public static final DeferredHolder<MenuType<?>, MenuType<NapoleonEngineMenu>> ENGINE_MENU = MENUS.register("engine", () -> IMenuTypeExtension.create((id, inv, buf) -> {
+        int shipId = buf.readVarInt();
+        Entity entity = inv.player.level().getEntity(shipId);
+        if (entity instanceof NapoleonShipEntity ship) {
+            return new NapoleonEngineMenu(id, inv, ship);
+        }
+        return new NapoleonEngineMenu(id, inv);
+    }));
 
     public static final DeferredItem<NapoleonShipItem> NAPOLEON_SHIP_ITEM = ITEMS.registerItem("napoleon_ship", NapoleonShipItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<DrakkarItem> DRAKKAR_ITEM = ITEMS.registerItem("drakkar", DrakkarItem::new, props -> props.stacksTo(1));
@@ -75,6 +89,9 @@ public class NapoleonShipMod {
     }
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("1").playToServer(FireBowShellPacket.TYPE, FireBowShellPacket.STREAM_CODEC, FireBowShellPacket::handle);
+        var registrar = event.registrar("1");
+        registrar.playToServer(FireBowShellPacket.TYPE, FireBowShellPacket.STREAM_CODEC, FireBowShellPacket::handle);
+        registrar.playToServer(FireTowerStonePacket.TYPE, FireTowerStonePacket.STREAM_CODEC, FireTowerStonePacket::handle);
+        registrar.playToServer(OpenEnginePacket.TYPE, OpenEnginePacket.STREAM_CODEC, OpenEnginePacket::handle);
     }
 }

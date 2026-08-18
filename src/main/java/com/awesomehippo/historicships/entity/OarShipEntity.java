@@ -1,26 +1,29 @@
 package com.awesomehippo.historicships.entity;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-public abstract class OarShipEntity extends Entity {
+public abstract class OarShipEntity extends StoredShipEntity {
+    private static final EntityDataAccessor<Float> DATA_ROW_PHASE = SynchedEntityData.defineId(OarShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_ROW_INTENSITY = SynchedEntityData.defineId(OarShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_ROW_HARD = SynchedEntityData.defineId(OarShipEntity.class, EntityDataSerializers.FLOAT);
+
     private float deltaRotation;
     private float steerSmoothed;
     private int lerpSteps;
@@ -38,6 +41,9 @@ public abstract class OarShipEntity extends Entity {
     private float sailFill;
     private float smoothedMaxSpeed;
     private int outOfWaterTicks;
+    private double animLastX;
+    private double animLastZ;
+    private boolean animPosInit;
 
     protected abstract OarShipStats stats();
 
@@ -55,7 +61,12 @@ public abstract class OarShipEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_ROW_PHASE, 0.0F);
+        builder.define(DATA_ROW_INTENSITY, 0.0F);
+        builder.define(DATA_ROW_HARD, 0.0F);
+    }
 
     @Override
     protected AABB makeBoundingBox(Vec3 pos) {
@@ -108,37 +119,28 @@ public abstract class OarShipEntity extends Entity {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
-        if (player.isSecondaryUseActive()) {
-            return InteractionResult.PASS;
-        }
-        if (!this.level().isClientSide()) {
-            return player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
-        }
-        return InteractionResult.SUCCESS;
+    protected ItemStack createDropStack() {
+        return this.stats().dropStack.get();
     }
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().size() < this.stats().maxPassengers;
+        return passenger instanceof Player && this.getPassengers().size() < this.stats().maxPassengers;
     }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
         float seatY = this.stats().modelDeckY * this.stats().u + this.stats().seatYPad;
-        int index = this.getPassengers().indexOf(passenger);
+        int index = ShipAnimalCargo.playerIndex(this, passenger);
         if (index < 0) {
-            index = this.getPassengers().size();
+            index = 0;
         }
         if (index >= this.stats().seatXz.length) {
             index = this.stats().seatXz.length - 1;
         }
         float modelX = this.stats().seatXz[index][0];
         float modelZ = this.stats().seatXz[index][1];
-        // (forward is negated)
-        float localForward = -(modelX * this.stats().u);
-        float localRight = modelZ * this.stats().u;
-        return new Vec3(localRight, seatY, localForward).yRot(-this.getYRot() * ((float) Math.PI / 180.0F));
+        return ShipAnimalCargo.seatOffset(this.getYRot(), modelX, modelZ, seatY, this.stats().u);
     }
 
     public boolean isConductor(Entity passenger) {
@@ -169,11 +171,29 @@ public abstract class OarShipEntity extends Entity {
     public void tick() {
         super.tick();
         this.tickLerp();
+
+        double animSpeed = 0.0D;
+        if (this.animPosInit) {
+            animSpeed = Math.hypot(this.getX() - this.animLastX, this.getZ() - this.animLastZ);
+        }
+        this.animLastX = this.getX();
+        this.animLastZ = this.getZ();
+        this.animPosInit = true;
+
         this.rowPhaseO = this.rowPhase;
         this.rowIntensityO = this.rowIntensity;
         this.hardAmountO = this.hardAmount;
+        if (!this.level().isClientSide()) {
+            this.tickRowing(animSpeed);
+        } else {
+            this.syncRowingFromData();
+            this.updateSailFillState(animSpeed);
+        }
 
-        if (this.isLocalInstanceAuthoritative()) {
+        if (this.isSinking()) {
+            this.applySinkMotion();
+            this.move(MoverType.SELF, this.getDeltaMovement());
+        } else if (this.isLocalInstanceAuthoritative()) {
             this.updateWaterContact();
             this.applyBuoyancy();
             if (this.level().isClientSide()) {
@@ -186,15 +206,9 @@ public abstract class OarShipEntity extends Entity {
 
         this.setBoundingBox(this.makeBoundingBox());
         this.resolveHullCollisions();
-
-        if (this.level().isClientSide()) {
-            this.tickRowAnimation();
-            this.updateSailFillState();
-        }
     }
 
-    private void tickRowAnimation() {
-        double speed = this.getDeltaMovement().horizontalDistance();
+    private void tickRowing(double speed) {
         float target = 0.0F;
         if (this.isVehicle() && this.isInWater() && speed > 0.008D) {
             target = Mth.clamp((float) (speed / this.stats().rowSpeedDiv), 0.0F, 1.0F);
@@ -205,20 +219,53 @@ public abstract class OarShipEntity extends Entity {
             this.rowIntensity = 0.0F;
         }
 
-        float hardTarget = (this.hardRowing && this.rowIntensity > 0.05F) ? 1.0F : 0.0F;
+        float hardTarget = (this.serverHardRowing() && this.rowIntensity > 0.05F) ? 1.0F : 0.0F;
         this.hardAmount += (hardTarget - this.hardAmount) * 0.14F;
         if (this.hardAmount < 0.002F) {
             this.hardAmount = 0.0F;
         }
 
         float step = (this.stats().rowStepBase + this.stats().rowStepHard * this.hardAmount) * this.rowIntensity;
-        this.rowPhase += step;
+        this.rowPhase = (this.rowPhase + step) % Mth.TWO_PI;
+
+        this.entityData.set(DATA_ROW_PHASE, this.rowPhase);
+        this.entityData.set(DATA_ROW_INTENSITY, this.rowIntensity);
+        this.entityData.set(DATA_ROW_HARD, this.hardAmount);
     }
 
-    private void updateSailFillState() {
-        double speed = this.getDeltaMovement().horizontalDistance();
+    private boolean serverHardRowing() {
+        if (this.getControllingPassenger() instanceof ServerPlayer player) {
+            Input input = player.getLastClientInput();
+            return input.sprint() && input.forward();
+        }
+        return false;
+    }
+
+    private void syncRowingFromData() {
+        this.rowIntensity += (this.entityData.get(DATA_ROW_INTENSITY) - this.rowIntensity) * 0.35F;
+        this.hardAmount += (this.entityData.get(DATA_ROW_HARD) - this.hardAmount) * 0.35F;
+
+        float step = (this.stats().rowStepBase + this.stats().rowStepHard * this.hardAmount) * this.rowIntensity;
+        this.rowPhase += step;
+
+        float synced = this.entityData.get(DATA_ROW_PHASE);
+        while (synced < this.rowPhase - Mth.PI) {
+            synced += Mth.TWO_PI;
+        }
+        while (synced > this.rowPhase + Mth.PI) {
+            synced -= Mth.TWO_PI;
+        }
+        float err = synced - this.rowPhase;
+        if (Math.abs(err) > 1.0F) {
+            this.rowPhase = synced;
+        } else {
+            this.rowPhase += err * 0.2F;
+        }
+    }
+
+    private void updateSailFillState(double speed) {
         float target = Mth.clamp((float) (speed / this.stats().sailSpeedDiv), 0.0F, 1.0F);
-        if (this.hardRowing) {
+        if (this.hardAmount > 0.5F) {
             target = Mth.clamp(target + this.stats().sailHardBonus, 0.0F, 1.0F);
         }
         float ease = target < this.sailFill ? 0.06F : 0.12F;
@@ -352,7 +399,7 @@ public abstract class OarShipEntity extends Entity {
             this.steerSmoothed += (0.0F - this.steerSmoothed) * 0.25F;
             return;
         }
-        Entity controller = this.getFirstPassenger();
+        Entity controller = this.getControllingPassenger();
         if (!(controller instanceof Player player)) {
             this.steerSmoothed += (0.0F - this.steerSmoothed) * 0.25F;
             return;
@@ -438,23 +485,7 @@ public abstract class OarShipEntity extends Entity {
     @Nullable
     @Override
     public LivingEntity getControllingPassenger() {
-        Entity e = this.getFirstPassenger();
-        return e instanceof LivingEntity living ? living : super.getControllingPassenger();
+        LivingEntity player = ShipAnimalCargo.firstPlayer(this);
+        return player != null ? player : super.getControllingPassenger();
     }
-
-    @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
-        if (this.isInvulnerable()) {
-            return false;
-        }
-        this.spawnAtLocation(level, this.stats().dropStack.get());
-        this.kill(level);
-        return true;
-    }
-
-    @Override
-    protected void readAdditionalSaveData(ValueInput input) {}
-
-    @Override
-    protected void addAdditionalSaveData(ValueOutput output) {}
 }

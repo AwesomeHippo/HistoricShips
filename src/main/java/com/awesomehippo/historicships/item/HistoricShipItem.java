@@ -1,5 +1,7 @@
 package com.awesomehippo.historicships.item;
 
+import com.awesomehippo.historicships.entity.StoredShipEntity;
+
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -52,6 +54,9 @@ public abstract class HistoricShipItem extends Item {
                 return InteractionResult.FAIL;
             }
             if (!level.isClientSide()) {
+                if (boat instanceof StoredShipEntity ship) {
+                    ship.setOwner(player);
+                }
                 level.addFreshEntity(boat);
                 level.gameEvent(player, GameEvent.ENTITY_PLACE, hit.getLocation());
                 stack.consume(1, player);
