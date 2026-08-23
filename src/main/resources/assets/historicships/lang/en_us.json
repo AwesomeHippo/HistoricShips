@@ -14,6 +14,8 @@
   "key.historicships.toggle_sails": "Set / Furl Sails",
   "key.historicships.open_engine": "Steam Engine",
   "entity.historicships.stone_bullet": "Stone Bullet",
+  "entity.historicships.cannonball": "Cannonball",
+  "item.historicships.hull": "Hull: %s / %s",
   "container.historicships.engine": "Steam Engine",
   "gui.historicships.engine.water": "Boiler water: %s / %s",
   "gui.historicships.engine.pressure": "Steam pressure: %s%%",

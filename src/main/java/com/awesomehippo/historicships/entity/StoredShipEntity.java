@@ -1,5 +1,7 @@
 package com.awesomehippo.historicships.entity;
 
+import com.awesomehippo.historicships.NapoleonShipMod;
+
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
@@ -40,6 +43,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
@@ -68,6 +72,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
     private int sinkTicksPrev;
     private int sinkTicksSync;
     private @Nullable LivingEntity sinkingBreaker;
+    private int outOfWaterTicks;
 
     protected StoredShipEntity(EntityType<?> type, Level level) {
         super(type, level);
@@ -77,14 +82,6 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     public void setOwner(@Nullable Player player) {
         this.ownerUuid = player != null ? player.getUUID() : null;
-    }
-
-    public void setOwnerUuid(@Nullable UUID uuid) {
-        this.ownerUuid = uuid;
-    }
-
-    public @Nullable UUID getOwnerUuid() {
-        return this.ownerUuid;
     }
 
     public boolean isOwner(Player player) {
@@ -98,7 +95,41 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     protected abstract ItemStack createDropStack();
 
-    protected abstract int getMaxHull();
+    public abstract int getMaxHull();
+
+    protected abstract float halfLoa();
+
+    protected abstract float halfBeam();
+
+    protected abstract float hullHeight();
+
+    protected abstract float cullHalfLoa();
+
+    protected abstract float cullHalfBeam();
+
+    protected abstract float cullHeight();
+
+    protected abstract void controlShip();
+
+    protected float hullBottomPad() {
+        return 0.5F;
+    }
+
+    protected double swellRate() {
+        return 0.024D;
+    }
+
+    protected double swellAmp() {
+        return 0.00035D;
+    }
+
+    protected double buoyLift() {
+        return 0.0028D;
+    }
+
+    protected double waterDrag() {
+        return 0.989D;
+    }
 
     public final int cargoSlotCount() {
         return this.cargoRows() * 9;
@@ -108,12 +139,13 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         return this.level().isClientSide() ? this.entityData.get(DATA_HULL) : this.hull;
     }
 
-    public int getHullMax() {
-        return this.getMaxHull();
+    public void setHull(int value) {
+        this.hull = Math.min(this.getMaxHull(), Math.max(1, value));
+        this.syncHull();
     }
 
     public int getHullPercent() {
-        int max = Math.max(1, this.getHullMax());
+        int max = Math.max(1, this.getMaxHull());
         return Math.min(100, Math.max(0, (this.getHull() * 100) / max));
     }
 
@@ -172,6 +204,230 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         Vec3 v = this.getDeltaMovement();
         double vy = Math.max(v.y - 0.008, -0.055);
         this.setDeltaMovement(v.x * 0.90, vy, v.z * 0.90);
+    }
+
+    @Override
+    protected AABB makeBoundingBox(Vec3 pos) {
+        return this.shipBox(pos, this.halfLoa(), this.halfBeam(), this.hullHeight());
+    }
+
+    public AABB makeCullBox() {
+        return this.shipBox(this.position(), this.cullHalfLoa(), this.cullHalfBeam(), this.cullHeight());
+    }
+
+    private AABB shipBox(Vec3 pos, float halfLoa, float halfBeam, float height) {
+        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
+        float bowX = Mth.sin(yaw);
+        float bowZ = -Mth.cos(yaw);
+        float stbdX = -bowZ;
+        float stbdZ = bowX;
+
+        double minX = pos.x;
+        double maxX = pos.x;
+        double minZ = pos.z;
+        double maxZ = pos.z;
+        for (int fl = -1; fl <= 1; fl += 2) {
+            for (int s = -1; s <= 1; s += 2) {
+                double x = pos.x + fl * halfLoa * bowX + s * halfBeam * stbdX;
+                double z = pos.z + fl * halfLoa * bowZ + s * halfBeam * stbdZ;
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minZ = Math.min(minZ, z);
+                maxZ = Math.max(maxZ, z);
+            }
+        }
+        return new AABB(minX, pos.y - this.hullBottomPad(), minZ, maxX, pos.y + height, maxZ);
+    }
+
+    @Override
+    public boolean canCollideWith(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean canBeCollidedWith(@Nullable Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public boolean canSprint() {
+        return true;
+    }
+
+    @Override
+    public boolean isPickable() {
+        return !this.isRemoved();
+    }
+
+    @Override
+    protected void doWaterSplashEffect() {}
+
+    @Nullable
+    @Override
+    public LivingEntity getControllingPassenger() {
+        LivingEntity player = ShipAnimalCargo.firstPlayer(this);
+        return player != null ? player : super.getControllingPassenger();
+    }
+
+    public boolean isConductor(Entity passenger) {
+        return this.getControllingPassenger() == passenger;
+    }
+
+    protected void syncShipPosition() {
+        if (this.isClientAuthoritative()) {
+            this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
+        }
+    }
+
+    protected void tickMovement() {
+        if (this.isSinking()) {
+            this.applySinkMotion();
+            this.move(MoverType.SELF, this.getDeltaMovement());
+        } else if (this.isLocalInstanceAuthoritative()) {
+            this.updateWaterContact();
+            this.applyBuoyancy();
+            if (this.level().isClientSide()) {
+                this.controlShip();
+            }
+            this.move(MoverType.SELF, this.getDeltaMovement());
+        } else {
+            this.setDeltaMovement(Vec3.ZERO);
+        }
+        this.setBoundingBox(this.makeBoundingBox());
+        this.resolveHullCollisions();
+    }
+
+    private void updateWaterContact() {
+        if (this.isInWater()) {
+            this.outOfWaterTicks = 0;
+        } else {
+            this.outOfWaterTicks = Math.min(this.outOfWaterTicks + 1, 40);
+        }
+    }
+
+    protected boolean isMarine() {
+        return this.outOfWaterTicks < 6;
+    }
+
+    private void applyBuoyancy() {
+        if (this.isMarine()) {
+            Vec3 v = this.getDeltaMovement();
+            double speed = Math.sqrt(v.x * v.x + v.z * v.z);
+            double vy;
+            if (this.tickCount < 30) {
+                vy = v.y * 0.65D + 0.0025D;
+                vy = Mth.clamp(vy, -0.012D, 0.01D);
+            } else if (speed < 0.03D && Math.abs(v.y) < 0.02D) {
+                vy = v.y * 0.5D;
+                if (Math.abs(vy) < 0.002D) {
+                    vy = 0.0D;
+                }
+            } else {
+                double swell = Math.sin(this.tickCount * this.swellRate()) * this.swellAmp();
+                vy = v.y * 0.90D + this.buoyLift() + swell;
+                vy = Mth.clamp(vy, -0.014D, 0.012D);
+            }
+            double drag = this.waterDrag();
+            if (speed < 0.02D) {
+                drag = 0.92D;
+            }
+            this.setDeltaMovement(v.x * drag, vy, v.z * drag);
+        } else {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.03D, 0.0D));
+            this.setDeltaMovement(this.getDeltaMovement().multiply(0.8D, 0.98D, 0.8D));
+        }
+    }
+
+    private void resolveHullCollisions() {
+        double searchR = this.halfLoa() + this.halfBeam() + 2.0;
+        AABB search = new AABB(this.getX() - searchR, this.getY() - 0.75, this.getZ() - searchR, this.getX() + searchR, this.getY() + this.hullHeight() + 1.0, this.getZ() + searchR);
+
+        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
+        float bowX = Mth.sin(yaw);
+        float bowZ = -Mth.cos(yaw);
+        float stbdX = -bowZ;
+        float stbdZ = bowX;
+
+        for (Entity other : this.level().getEntities(this, search, this::shouldHullCollideWith)) {
+            this.pushEntityOutOfHull(other, bowX, bowZ, stbdX, stbdZ);
+        }
+    }
+
+    private boolean shouldHullCollideWith(Entity other) {
+        if (!other.isAlive() || other.isSpectator() || other.noPhysics) {
+            return false;
+        }
+        if (other.getVehicle() == this || this.isPassengerOfSameVehicle(other)) {
+            return false;
+        }
+        return other instanceof Player || other instanceof LivingEntity || other.isPushable();
+    }
+
+    private void pushEntityOutOfHull(Entity other, float bowX, float bowZ, float stbdX, float stbdZ) {
+        AABB bb = other.getBoundingBox();
+
+        double ox = other.getX() - this.getX();
+        double oz = other.getZ() - this.getZ();
+        double feet = bb.minY - this.getY();
+        double head = bb.maxY - this.getY();
+
+        if (head < 0.0 || feet > this.hullHeight()) {
+            return;
+        }
+
+        // along = bow & across = beam
+        double along = ox * bowX + oz * bowZ;
+        double across = ox * stbdX + oz * stbdZ;
+
+        float otherHalf = Math.max(other.getBbWidth() * 0.45F, 0.25F);
+        double limAlong = this.halfLoa() + otherHalf;
+        double limAcross = this.halfBeam() + otherHalf;
+
+        if (Math.abs(along) >= limAlong || Math.abs(across) >= limAcross) {
+            return;
+        }
+
+        double penAlong = limAlong - Math.abs(along);
+        double penAcross = limAcross - Math.abs(across);
+
+        double pushAlong = 0.0;
+        double pushAcross = 0.0;
+
+        if (penAcross <= penAlong + 0.05) {
+            double sign = across >= 0.0 ? 1.0 : -1.0;
+            if (Math.abs(across) < 1.0E-4) {
+                sign = 1.0;
+            }
+            pushAcross = (limAcross + 0.03) * sign - across;
+        } else {
+            double sign = along >= 0.0 ? 1.0 : -1.0;
+            if (Math.abs(along) < 1.0E-4) {
+                sign = 1.0;
+            }
+            pushAlong = (limAlong + 0.03) * sign - along;
+        }
+
+        double pdx = bowX * pushAlong + stbdX * pushAcross;
+        double pdz = bowZ * pushAlong + stbdZ * pushAcross;
+        if (pdx * pdx + pdz * pdz < 1.0E-10) {
+            return;
+        }
+
+        other.setPos(other.getX() + pdx, other.getY(), other.getZ() + pdz);
+        Vec3 v = other.getDeltaMovement();
+
+        double len = Math.sqrt(pdx * pdx + pdz * pdz);
+        double nx = pdx / len;
+        double nz = pdz / len;
+        double into = v.x * nx + v.z * nz;
+        if (into < 0.0) {
+            other.setDeltaMovement(v.x - nx * into, v.y, v.z - nz * into);
+        }
     }
 
     private void startSinking(ServerLevel level, @Nullable LivingEntity breaker) {
@@ -285,6 +541,9 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         this.chestVehicleDestroyed(src, level, this);
         this.clearChestVehicleContent();
         ItemStack stack = this.createDropStack();
+        if (this.hull < this.getMaxHull()) {
+            stack.set(NapoleonShipMod.SHIP_HULL.get(), this.hull);
+        }
         if (!player.getInventory().add(stack) || !stack.isEmpty()) {
             this.spawnAtLocation(level, stack);
         }

@@ -58,7 +58,6 @@ public class ShipwrightScreen extends AbstractContainerScreen<ShipwrightMenu> {
             return;
         }
         if (this.menu.clickMenuButton(this.minecraft.player, recipeIndex)) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_TAKE_RESULT, 1.0F));
             this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, recipeIndex);
         }
     }

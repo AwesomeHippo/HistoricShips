@@ -4,6 +4,9 @@ import com.awesomehippo.historicships.NapoleonShipMod;
 
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -36,7 +39,7 @@ public class QuinqueremeEntity extends OarShipEntity {
     private static final float STONE_SPEED = 1.55F;
     private static final int VOLLEY = 3;
 
-    private int towerCooldown;
+    private static final EntityDataAccessor<Integer> DATA_TOWER_UNTIL = SynchedEntityData.defineId(QuinqueremeEntity.class, EntityDataSerializers.INT);
 
     private static final float[][] CARGO_XZ = {
         {6.0F, 0.0F},
@@ -73,12 +76,18 @@ public class QuinqueremeEntity extends OarShipEntity {
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_TOWER_UNTIL, 0);
+    }
+
+    @Override
     protected int cargoRows() {
         return CARGO_ROWS;
     }
 
     @Override
-    protected int getMaxHull() {
+    public int getMaxHull() {
         return MAX_HULL;
     }
 
@@ -144,22 +153,14 @@ public class QuinqueremeEntity extends OarShipEntity {
     }
 
     public int getTowerCooldown() {
-        return this.towerCooldown;
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.towerCooldown > 0) {
-            this.towerCooldown--;
-        }
+        return Math.max(0, this.entityData.get(DATA_TOWER_UNTIL) - (int) this.level().getGameTime());
     }
 
     public boolean tryFireTower() {
-        if (this.towerCooldown > 0) {
+        if (this.getTowerCooldown() > 0) {
             return false;
         }
-        this.towerCooldown = TOWER_COOLDOWN;
+        this.entityData.set(DATA_TOWER_UNTIL, (int) this.level().getGameTime() + TOWER_COOLDOWN);
         if (this.level().isClientSide()) {
             this.playTowerFireFx();
         }
@@ -170,10 +171,10 @@ public class QuinqueremeEntity extends OarShipEntity {
         if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server)) {
             return;
         }
-        if (this.towerCooldown > 0) {
+        if (this.getTowerCooldown() > 0) {
             return;
         }
-        this.towerCooldown = TOWER_COOLDOWN;
+        this.entityData.set(DATA_TOWER_UNTIL, (int) this.level().getGameTime() + TOWER_COOLDOWN);
 
         float yaw = this.getYRot() * Mth.DEG_TO_RAD;
         double bowX = Mth.sin(yaw);

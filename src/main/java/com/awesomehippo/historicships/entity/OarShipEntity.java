@@ -8,16 +8,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import org.jetbrains.annotations.Nullable;
 
 public abstract class OarShipEntity extends StoredShipEntity {
     private static final EntityDataAccessor<Float> DATA_ROW_PHASE = SynchedEntityData.defineId(OarShipEntity.class, EntityDataSerializers.FLOAT);
@@ -26,11 +21,6 @@ public abstract class OarShipEntity extends StoredShipEntity {
 
     private float deltaRotation;
     private float steerSmoothed;
-    private int lerpSteps;
-    private double lerpX;
-    private double lerpY;
-    private double lerpZ;
-    private double lerpYRot;
     private boolean hardRowing;
     private float rowPhase;
     private float rowPhaseO;
@@ -40,7 +30,6 @@ public abstract class OarShipEntity extends StoredShipEntity {
     private float hardAmountO;
     private float sailFill;
     private float smoothedMaxSpeed;
-    private int outOfWaterTicks;
     private double animLastX;
     private double animLastZ;
     private boolean animPosInit;
@@ -69,53 +58,53 @@ public abstract class OarShipEntity extends StoredShipEntity {
     }
 
     @Override
-    protected AABB makeBoundingBox(Vec3 pos) {
-        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
-        float bowX = Mth.sin(yaw);
-        float bowZ = -Mth.cos(yaw);
-        float stbdX = -bowZ;
-        float stbdZ = bowX;
-
-        double minX = pos.x;
-        double maxX = pos.x;
-        double minZ = pos.z;
-        double maxZ = pos.z;
-        for (int fl = -1; fl <= 1; fl += 2) {
-            for (int s = -1; s <= 1; s += 2) {
-                double x = pos.x + fl * this.stats().cullHalfLoa * bowX + s * this.stats().cullHalfBeam * stbdX;
-                double z = pos.z + fl * this.stats().cullHalfLoa * bowZ + s * this.stats().cullHalfBeam * stbdZ;
-                minX = Math.min(minX, x);
-                maxX = Math.max(maxX, x);
-                minZ = Math.min(minZ, z);
-                maxZ = Math.max(maxZ, z);
-            }
-        }
-        return new AABB(minX, pos.y - 0.5, minZ, maxX, pos.y + this.stats().cullHeight, maxZ);
+    protected float halfLoa() {
+        return this.stats().halfLoa;
     }
 
     @Override
-    public boolean canCollideWith(Entity entity) {
-        return false;
+    protected float halfBeam() {
+        return this.stats().halfBeam;
     }
 
     @Override
-    public boolean canBeCollidedWith(@Nullable Entity entity) {
-        return false;
+    protected float hullHeight() {
+        return this.stats().hullHeight;
     }
 
     @Override
-    public boolean isPushable() {
-        return false;
+    protected float cullHalfLoa() {
+        return this.stats().cullHalfLoa;
     }
 
     @Override
-    public boolean canSprint() {
-        return true;
+    protected float cullHalfBeam() {
+        return this.stats().cullHalfBeam;
     }
 
     @Override
-    public boolean isPickable() {
-        return !this.isRemoved();
+    protected float cullHeight() {
+        return this.stats().cullHeight;
+    }
+
+    @Override
+    protected double swellRate() {
+        return this.stats().swellRate;
+    }
+
+    @Override
+    protected double swellAmp() {
+        return this.stats().swellAmp;
+    }
+
+    @Override
+    protected double buoyLift() {
+        return this.stats().buoyLift;
+    }
+
+    @Override
+    protected double waterDrag() {
+        return this.stats().waterDrag;
     }
 
     @Override
@@ -143,10 +132,6 @@ public abstract class OarShipEntity extends StoredShipEntity {
         return ShipAnimalCargo.seatOffset(this.getYRot(), modelX, modelZ, seatY, this.stats().u);
     }
 
-    public boolean isConductor(Entity passenger) {
-        return this.getControllingPassenger() == passenger;
-    }
-
     public boolean isHardRowing() {
         return this.hardRowing;
     }
@@ -170,7 +155,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
     @Override
     public void tick() {
         super.tick();
-        this.tickLerp();
+        this.syncShipPosition();
 
         double animSpeed = 0.0D;
         if (this.animPosInit) {
@@ -190,22 +175,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
             this.updateSailFillState(animSpeed);
         }
 
-        if (this.isSinking()) {
-            this.applySinkMotion();
-            this.move(MoverType.SELF, this.getDeltaMovement());
-        } else if (this.isLocalInstanceAuthoritative()) {
-            this.updateWaterContact();
-            this.applyBuoyancy();
-            if (this.level().isClientSide()) {
-                this.controlShip();
-            }
-            this.move(MoverType.SELF, this.getDeltaMovement());
-        } else {
-            this.setDeltaMovement(Vec3.ZERO);
-        }
-
-        this.setBoundingBox(this.makeBoundingBox());
-        this.resolveHullCollisions();
+        this.tickMovement();
     }
 
     private void tickRowing(double speed) {
@@ -276,124 +246,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
     }
 
     @Override
-    protected void doWaterSplashEffect() {}
-
-    private void updateWaterContact() {
-        if (this.isInWater()) {
-            this.outOfWaterTicks = 0;
-        } else {
-            this.outOfWaterTicks = Math.min(this.outOfWaterTicks + 1, 40);
-        }
-    }
-
-    private boolean isMarine() {
-        return this.outOfWaterTicks < 6;
-    }
-
-    private void applyBuoyancy() {
-        if (this.isMarine()) {
-            Vec3 v = this.getDeltaMovement();
-            double speed = Math.sqrt(v.x * v.x + v.z * v.z);
-            double vy;
-            if (this.tickCount < 30) {
-                vy = v.y * 0.65D + 0.0025D;
-                vy = Mth.clamp(vy, -0.012D, 0.01D);
-            } else if (speed < 0.03D && Math.abs(v.y) < 0.02D) {
-                vy = v.y * 0.5D;
-                if (Math.abs(vy) < 0.002D) {
-                    vy = 0.0D;
-                }
-            } else {
-                double swell = Math.sin(this.tickCount * this.stats().swellRate) * this.stats().swellAmp;
-                vy = v.y * 0.90D + this.stats().buoyLift + swell;
-                vy = Mth.clamp(vy, -0.014D, 0.012D);
-            }
-            double drag = this.stats().waterDrag;
-            if (speed < 0.02D) {
-                drag = 0.92D;
-            }
-            this.setDeltaMovement(v.x * drag, vy, v.z * drag);
-        } else {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.03D, 0.0D));
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.8D, 0.98D, 0.8D));
-        }
-    }
-
-    private void resolveHullCollisions() {
-        double searchR = this.stats().halfLoa + this.stats().halfBeam + 2.0;
-        AABB search = new AABB(this.getX() - searchR, this.getY() - 0.75, this.getZ() - searchR, this.getX() + searchR, this.getY() + this.stats().hullHeight + 1.0, this.getZ() + searchR);
-        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
-        float bowX = Mth.sin(yaw);
-        float bowZ = -Mth.cos(yaw);
-        float stbdX = -bowZ;
-        float stbdZ = bowX;
-        for (Entity other : this.level().getEntities(this, search, this::shouldHullCollideWith)) {
-            pushEntityOutOfHull(other, bowX, bowZ, stbdX, stbdZ);
-        }
-    }
-
-    private boolean shouldHullCollideWith(Entity other) {
-        if (!other.isAlive() || other.isSpectator() || other.noPhysics) {
-            return false;
-        }
-        if (other.getVehicle() == this || this.isPassengerOfSameVehicle(other)) {
-            return false;
-        }
-        return other instanceof Player || other instanceof LivingEntity || other.isPushable();
-    }
-
-    private void pushEntityOutOfHull(Entity other, float bowX, float bowZ, float stbdX, float stbdZ) {
-        AABB bb = other.getBoundingBox();
-        double ox = other.getX() - this.getX();
-        double oz = other.getZ() - this.getZ();
-        double feet = bb.minY - this.getY();
-        double head = bb.maxY - this.getY();
-        if (head < 0.0 || feet > this.stats().hullHeight) {
-            return;
-        }
-        // along = bow & across = beam
-        double along = ox * bowX + oz * bowZ;
-        double across = ox * stbdX + oz * stbdZ;
-        float otherHalf = Math.max(other.getBbWidth() * 0.45F, 0.25F);
-        double limAlong = this.stats().halfLoa + otherHalf;
-        double limAcross = this.stats().halfBeam + otherHalf;
-        if (Math.abs(along) >= limAlong || Math.abs(across) >= limAcross) {
-            return;
-        }
-        double penAlong = limAlong - Math.abs(along);
-        double penAcross = limAcross - Math.abs(across);
-        double pushAlong = 0.0;
-        double pushAcross = 0.0;
-        if (penAcross <= penAlong + 0.05) {
-            double sign = across >= 0.0 ? 1.0 : -1.0;
-            if (Math.abs(across) < 1.0E-4) {
-                sign = 1.0;
-            }
-            pushAcross = (limAcross + 0.03) * sign - across;
-        } else {
-            double sign = along >= 0.0 ? 1.0 : -1.0;
-            if (Math.abs(along) < 1.0E-4) {
-                sign = 1.0;
-            }
-            pushAlong = (limAlong + 0.03) * sign - along;
-        }
-        double pdx = bowX * pushAlong + stbdX * pushAcross;
-        double pdz = bowZ * pushAlong + stbdZ * pushAcross;
-        if (pdx * pdx + pdz * pdz < 1.0E-10) {
-            return;
-        }
-        other.setPos(other.getX() + pdx, other.getY(), other.getZ() + pdz);
-        Vec3 v = other.getDeltaMovement();
-        double len = Math.sqrt(pdx * pdx + pdz * pdz);
-        double nx = pdx / len;
-        double nz = pdz / len;
-        double into = v.x * nx + v.z * nz;
-        if (into < 0.0) {
-            other.setDeltaMovement(v.x - nx * into, v.y, v.z - nz * into);
-        }
-    }
-
-    private void controlShip() {
+    protected void controlShip() {
         this.hardRowing = false;
         if (!this.isVehicle()) {
             this.steerSmoothed += (0.0F - this.steerSmoothed) * 0.25F;
@@ -471,21 +324,4 @@ public abstract class OarShipEntity extends StoredShipEntity {
         return false;
     }
 
-    private void tickLerp() {
-        if (this.isClientAuthoritative()) {
-            this.lerpSteps = 0;
-            this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-        }
-        if (this.lerpSteps > 0) {
-            this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.getXRot());
-            this.lerpSteps--;
-        }
-    }
-
-    @Nullable
-    @Override
-    public LivingEntity getControllingPassenger() {
-        LivingEntity player = ShipAnimalCargo.firstPlayer(this);
-        return player != null ? player : super.getControllingPassenger();
-    }
 }

@@ -15,6 +15,7 @@ import com.awesomehippo.historicships.entity.OarShipEntity;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 import com.awesomehippo.historicships.entity.ShipAnimalCargo;
 import com.awesomehippo.historicships.entity.StoredShipEntity;
+import com.awesomehippo.historicships.item.HistoricShipItem;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
@@ -37,6 +38,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 @Mod(value = NapoleonShipMod.MODID, dist = Dist.CLIENT)
 public class NapoleonShipClient {
@@ -75,6 +77,16 @@ public class NapoleonShipClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderGui);
         NeoForge.EVENT_BUS.addListener(this::onComputeFov);
+        NeoForge.EVENT_BUS.addListener(this::onItemTooltip);
+    }
+
+    private void onItemTooltip(ItemTooltipEvent event) {
+        if (event.getItemStack().getItem() instanceof HistoricShipItem shipItem) {
+            Integer hull = event.getItemStack().get(NapoleonShipMod.SHIP_HULL.get());
+            if (hull != null) {
+                event.getToolTip().add(Component.translatable("item.historicships.hull", hull, shipItem.getMaxHull()));
+            }
+        }
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {

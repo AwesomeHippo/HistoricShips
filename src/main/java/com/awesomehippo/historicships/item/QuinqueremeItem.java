@@ -14,4 +14,9 @@ public class QuinqueremeItem extends HistoricShipItem {
     protected Entity createShip(Level level, double x, double y, double z) {
         return new QuinqueremeEntity(level, x, y, z);
     }
+
+    @Override
+    public int getMaxHull() {
+        return QuinqueremeEntity.MAX_HULL;
+    }
 }

@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
 
 public class DrakkarRenderer extends EntityRenderer<DrakkarEntity, OarShipRenderState> {
     public static final float SCALE = DrakkarEntity.MODEL_SCALE;
@@ -20,6 +21,11 @@ public class DrakkarRenderer extends EntityRenderer<DrakkarEntity, OarShipRender
         super(context);
         this.shadowRadius = 3.24F;
         this.model = new DrakkarModel(context.bakeLayer(DrakkarModel.LAYER_LOCATION));
+    }
+
+    @Override
+    protected AABB getBoundingBoxForCulling(DrakkarEntity ship) {
+        return ship.makeCullBox();
     }
 
     @Override

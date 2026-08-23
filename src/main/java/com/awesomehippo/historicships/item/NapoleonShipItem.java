@@ -14,4 +14,9 @@ public class NapoleonShipItem extends HistoricShipItem {
     protected Entity createShip(Level level, double x, double y, double z) {
         return new NapoleonShipEntity(level, x, y, z);
     }
+
+    @Override
+    public int getMaxHull() {
+        return NapoleonShipEntity.MAX_HULL;
+    }
 }

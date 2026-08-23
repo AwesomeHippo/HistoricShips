@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
 
 public class QuinqueremeRenderer extends EntityRenderer<QuinqueremeEntity, OarShipRenderState> {
     public static final float SCALE = QuinqueremeEntity.MODEL_SCALE;
@@ -20,6 +21,11 @@ public class QuinqueremeRenderer extends EntityRenderer<QuinqueremeEntity, OarSh
         super(context);
         this.shadowRadius = MODEL_LOA * SCALE / 16.0F * 0.28F;
         this.model = new QuinqueremeModel(context.bakeLayer(QuinqueremeModel.LAYER_LOCATION));
+    }
+
+    @Override
+    protected AABB getBoundingBoxForCulling(QuinqueremeEntity ship) {
+        return ship.makeCullBox();
     }
 
     @Override

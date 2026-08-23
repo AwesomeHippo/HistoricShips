@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
 
 public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, NapoleonShipRenderState> {
     public static final float SCALE = NapoleonShipEntity.MODEL_SCALE;
@@ -20,6 +21,11 @@ public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, Nap
         super(context);
         this.shadowRadius = 7.81F;
         this.model = new NapoleonShipModel(context.bakeLayer(NapoleonShipModel.LAYER_LOCATION));
+    }
+
+    @Override
+    protected AABB getBoundingBoxForCulling(NapoleonShipEntity ship) {
+        return ship.makeCullBox();
     }
 
     @Override

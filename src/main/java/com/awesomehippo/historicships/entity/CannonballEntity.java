@@ -44,10 +44,6 @@ public class CannonballEntity extends ThrowableItemProjectile {
         this.sourceShip = ship;
     }
 
-    public @Nullable Entity getSourceShip() {
-        return this.sourceShip;
-    }
-
     @Override
     protected Item getDefaultItem() {
         return Items.FIRE_CHARGE;

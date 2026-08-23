@@ -71,10 +71,6 @@ public class NapoleonEngineMenu extends AbstractContainerMenu {
         this.addDataSlots(data);
     }
 
-    public NapoleonShipEntity getShip() {
-        return this.ship;
-    }
-
     public int getWater() {
         return this.data.get(DATA_WATER);
     }

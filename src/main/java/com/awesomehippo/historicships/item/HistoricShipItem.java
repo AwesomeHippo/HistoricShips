@@ -1,5 +1,6 @@
 package com.awesomehippo.historicships.item;
 
+import com.awesomehippo.historicships.NapoleonShipMod;
 import com.awesomehippo.historicships.entity.StoredShipEntity;
 
 import net.minecraft.stats.Stats;
@@ -26,6 +27,8 @@ public abstract class HistoricShipItem extends Item {
     }
 
     protected abstract Entity createShip(Level level, double x, double y, double z);
+
+    public abstract int getMaxHull();
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
@@ -56,6 +59,10 @@ public abstract class HistoricShipItem extends Item {
             if (!level.isClientSide()) {
                 if (boat instanceof StoredShipEntity ship) {
                     ship.setOwner(player);
+                    Integer hull = stack.get(NapoleonShipMod.SHIP_HULL.get());
+                    if (hull != null) {
+                        ship.setHull(hull);
+                    }
                 }
                 level.addFreshEntity(boat);
                 level.gameEvent(player, GameEvent.ENTITY_PLACE, hit.getLocation());

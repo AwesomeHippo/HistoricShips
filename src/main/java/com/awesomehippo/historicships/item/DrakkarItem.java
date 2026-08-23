@@ -14,4 +14,9 @@ public class DrakkarItem extends HistoricShipItem {
     protected Entity createShip(Level level, double x, double y, double z) {
         return new DrakkarEntity(level, x, y, z);
     }
+
+    @Override
+    public int getMaxHull() {
+        return DrakkarEntity.MAX_HULL;
+    }
 }

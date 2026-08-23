@@ -15,8 +15,11 @@ import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -47,12 +50,15 @@ public class NapoleonShipMod {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
-    public static final DeferredHolder<EntityType<?>, EntityType<NapoleonShipEntity>> NAPOLEON_SHIP_ENTITY = ENTITIES.registerEntityType("napoleon_ship", NapoleonShipEntity::new, MobCategory.MISC, builder -> builder.sized(24.0F, 22.0F).clientTrackingRange(64).updateInterval(3).fireImmune());
-    public static final DeferredHolder<EntityType<?>, EntityType<DrakkarEntity>> DRAKKAR_ENTITY = ENTITIES.registerEntityType("drakkar", DrakkarEntity::new, MobCategory.MISC, builder -> builder.sized(14.0F, 10.0F).clientTrackingRange(48).updateInterval(3).fireImmune());
-    public static final DeferredHolder<EntityType<?>, EntityType<QuinqueremeEntity>> QUINQUEREME_ENTITY = ENTITIES.registerEntityType("quinquereme", QuinqueremeEntity::new, MobCategory.MISC, builder -> builder.sized(18.0F, 8.0F).clientTrackingRange(64).updateInterval(3).fireImmune());
-    public static final DeferredHolder<EntityType<?>, EntityType<CannonballEntity>> CANNONBALL_ENTITY = ENTITIES.registerEntityType("cannonball", CannonballEntity::new, MobCategory.MISC, builder -> builder.sized(0.95F, 0.95F).clientTrackingRange(20).updateInterval(1).fireImmune());
-    public static final DeferredHolder<EntityType<?>, EntityType<StoneBulletEntity>> STONE_BULLET_ENTITY = ENTITIES.registerEntityType("stone_bullet", StoneBulletEntity::new, MobCategory.MISC, builder -> builder.sized(0.72F, 0.72F).clientTrackingRange(24).updateInterval(1).fireImmune());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SHIP_HULL = DATA_COMPONENTS.registerComponentType("hull", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<NapoleonShipEntity>> NAPOLEON_SHIP_ENTITY = ENTITIES.registerEntityType("napoleon_ship", NapoleonShipEntity::new, MobCategory.MISC, builder -> builder.sized(24.0F, 22.0F).clientTrackingRange(16).updateInterval(3).fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<DrakkarEntity>> DRAKKAR_ENTITY = ENTITIES.registerEntityType("drakkar", DrakkarEntity::new, MobCategory.MISC, builder -> builder.sized(14.0F, 10.0F).clientTrackingRange(10).updateInterval(3).fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<QuinqueremeEntity>> QUINQUEREME_ENTITY = ENTITIES.registerEntityType("quinquereme", QuinqueremeEntity::new, MobCategory.MISC, builder -> builder.sized(18.0F, 8.0F).clientTrackingRange(12).updateInterval(3).fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<CannonballEntity>> CANNONBALL_ENTITY = ENTITIES.registerEntityType("cannonball", CannonballEntity::new, MobCategory.MISC, builder -> builder.sized(0.95F, 0.95F).clientTrackingRange(8).updateInterval(1).fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<StoneBulletEntity>> STONE_BULLET_ENTITY = ENTITIES.registerEntityType("stone_bullet", StoneBulletEntity::new, MobCategory.MISC, builder -> builder.sized(0.72F, 0.72F).clientTrackingRange(6).updateInterval(1).fireImmune());
 
     public static final DeferredBlock<ShipwrightWorkbenchBlock> SHIPWRIGHT_WORKBENCH = BLOCKS.registerBlock("shipwright_workbench", ShipwrightWorkbenchBlock::new, () -> BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F).sound(SoundType.WOOD).ignitedByLava().noOcclusion());
     public static final DeferredItem<BlockItem> SHIPWRIGHT_WORKBENCH_ITEM = ITEMS.registerSimpleBlockItem(SHIPWRIGHT_WORKBENCH);
@@ -85,6 +91,7 @@ public class NapoleonShipMod {
         BLOCK_ENTITIES.register(modBus);
         MENUS.register(modBus);
         CREATIVE_TABS.register(modBus);
+        DATA_COMPONENTS.register(modBus);
         modBus.addListener(this::registerPayloads);
     }
 

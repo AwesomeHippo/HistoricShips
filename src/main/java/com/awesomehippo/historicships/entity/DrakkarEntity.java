@@ -66,7 +66,7 @@ public class DrakkarEntity extends OarShipEntity {
     }
 
     @Override
-    protected int getMaxHull() {
+    public int getMaxHull() {
         return MAX_HULL;
     }
 
