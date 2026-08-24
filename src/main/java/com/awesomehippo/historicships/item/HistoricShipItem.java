@@ -3,6 +3,7 @@ package com.awesomehippo.historicships.item;
 import com.awesomehippo.historicships.NapoleonShipMod;
 import com.awesomehippo.historicships.entity.StoredShipEntity;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,8 +31,16 @@ public abstract class HistoricShipItem extends Item {
 
     public abstract int getMaxHull();
 
+    public abstract boolean isEnabled();
+
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        if (!this.isEnabled()) {
+            if (!level.isClientSide()) {
+                player.sendOverlayMessage(Component.translatable("item.historicships.disabled"));
+            }
+            return InteractionResult.FAIL;
+        }
         ItemStack stack = player.getItemInHand(hand);
         BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY);
         if (hit.getType() == HitResult.Type.MISS) {

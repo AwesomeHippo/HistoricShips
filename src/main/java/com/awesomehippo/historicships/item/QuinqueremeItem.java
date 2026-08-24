@@ -1,5 +1,6 @@
 package com.awesomehippo.historicships.item;
 
+import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 
 import net.minecraft.world.entity.Entity;
@@ -18,5 +19,10 @@ public class QuinqueremeItem extends HistoricShipItem {
     @Override
     public int getMaxHull() {
         return QuinqueremeEntity.MAX_HULL;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ShipsConfig.QUINQUEREME.get();
     }
 }

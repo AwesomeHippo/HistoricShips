@@ -16,6 +16,7 @@
   "entity.historicships.stone_bullet": "Stone Bullet",
   "entity.historicships.cannonball": "Cannonball",
   "item.historicships.hull": "Hull: %s / %s",
+  "item.historicships.disabled": "Ship disabled (config)",
   "container.historicships.engine": "Steam Engine",
   "gui.historicships.engine.water": "Boiler water: %s / %s",
   "gui.historicships.engine.pressure": "Steam pressure: %s%%",

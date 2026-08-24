@@ -40,8 +40,9 @@ public class ShipwrightScreen extends AbstractContainerScreen<ShipwrightMenu> {
     @Override
     protected void init() {
         super.init();
-        for (int i = 0; i < ShipAssemblyRecipe.all().size(); i++) {
-            final int recipeIndex = i;
+        var recipes = ShipAssemblyRecipe.all();
+        for (int i = 0; i < recipes.size(); i++) {
+            final int recipeIndex = recipes.get(i).index();
 
             int by = this.topPos + ShipwrightMenu.RECIPE_Y0 + i * ShipwrightMenu.RECIPE_H + 2;
             this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.assemble"), b -> this.tryAssemble(recipeIndex)).bounds(this.leftPos + ShipwrightMenu.BUTTON_X, by, ShipwrightMenu.BUTTON_W, ShipwrightMenu.BUTTON_H).build(AssembleButton::new));

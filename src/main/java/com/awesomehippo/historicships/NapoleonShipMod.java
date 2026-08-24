@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -77,14 +78,20 @@ public class NapoleonShipMod {
     public static final DeferredItem<DrakkarItem> DRAKKAR_ITEM = ITEMS.registerItem("drakkar", DrakkarItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<QuinqueremeItem> QUINQUEREME_ITEM = ITEMS.registerItem("quinquereme", QuinqueremeItem::new, props -> props.stacksTo(1));
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.historicships")).icon(() -> new ItemStack(NAPOLEON_SHIP_ITEM.get())).displayItems((params, output) -> {
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.historicships")).icon(NapoleonShipMod::tabIcon).displayItems((params, output) -> {
         output.accept(SHIPWRIGHT_WORKBENCH_ITEM.get());
-        output.accept(DRAKKAR_ITEM.get());
-        output.accept(QUINQUEREME_ITEM.get());
-        output.accept(NAPOLEON_SHIP_ITEM.get());
+        if (ShipsConfig.DRAKKAR.get()) {
+            output.accept(DRAKKAR_ITEM.get());
+        }
+        if (ShipsConfig.QUINQUEREME.get()) {
+            output.accept(QUINQUEREME_ITEM.get());
+        }
+        if (ShipsConfig.NAPOLEON_SHIP.get()) {
+            output.accept(NAPOLEON_SHIP_ITEM.get());
+        }
     }).build());
 
-    public NapoleonShipMod(IEventBus modBus) {
+    public NapoleonShipMod(IEventBus modBus, ModContainer container) {
         ENTITIES.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
@@ -93,6 +100,20 @@ public class NapoleonShipMod {
         CREATIVE_TABS.register(modBus);
         DATA_COMPONENTS.register(modBus);
         modBus.addListener(this::registerPayloads);
+        ShipsConfig.register(container);
+    }
+
+    private static ItemStack tabIcon() {
+        if (ShipsConfig.NAPOLEON_SHIP.get()) {
+            return new ItemStack(NAPOLEON_SHIP_ITEM.get());
+        }
+        if (ShipsConfig.QUINQUEREME.get()) {
+            return new ItemStack(QUINQUEREME_ITEM.get());
+        }
+        if (ShipsConfig.DRAKKAR.get()) {
+            return new ItemStack(DRAKKAR_ITEM.get());
+        }
+        return new ItemStack(SHIPWRIGHT_WORKBENCH_ITEM.get());
     }
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {

@@ -16,6 +16,7 @@
   "entity.historicships.stone_bullet": "Boulet de pierre",
   "entity.historicships.cannonball": "Boulet de canon",
   "item.historicships.hull": "Coque : %s / %s",
+  "item.historicships.disabled": "Navire désactivé (config)",
   "container.historicships.engine": "Machine à vapeur",
   "gui.historicships.engine.water": "Eau chaudière : %s / %s",
   "gui.historicships.engine.pressure": "Pression : %s%%",

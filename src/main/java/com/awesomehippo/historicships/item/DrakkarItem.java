@@ -1,5 +1,6 @@
 package com.awesomehippo.historicships.item;
 
+import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 
 import net.minecraft.world.entity.Entity;
@@ -18,5 +19,10 @@ public class DrakkarItem extends HistoricShipItem {
     @Override
     public int getMaxHull() {
         return DrakkarEntity.MAX_HULL;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ShipsConfig.DRAKKAR.get();
     }
 }

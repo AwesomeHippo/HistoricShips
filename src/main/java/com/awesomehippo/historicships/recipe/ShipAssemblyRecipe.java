@@ -1,7 +1,9 @@
 package com.awesomehippo.historicships.recipe;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.ShipsConfig;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
@@ -21,11 +23,13 @@ public final class ShipAssemblyRecipe {
     public final Component title;
     public final Supplier<ItemStack> result;
     public final List<CountedNeed> needs;
+    public final BooleanSupplier enabled;
 
-    public ShipAssemblyRecipe(Component title, Supplier<ItemStack> result, List<CountedNeed> needs) {
+    public ShipAssemblyRecipe(Component title, Supplier<ItemStack> result, List<CountedNeed> needs, BooleanSupplier enabled) {
         this.title = title;
         this.result = result;
         this.needs = List.copyOf(needs);
+        this.enabled = enabled;
     }
 
     public ItemStack resultStack() {
@@ -93,20 +97,28 @@ public final class ShipAssemblyRecipe {
     }
 
     public static List<ShipAssemblyRecipe> all() {
-        return RECIPES;
+        return RECIPES.stream().filter(recipe -> recipe.enabled.getAsBoolean()).toList();
     }
 
     public static ShipAssemblyRecipe byIndex(int index) {
         if (index < 0 || index >= RECIPES.size()) {
             return null;
         }
-        return RECIPES.get(index);
+        ShipAssemblyRecipe recipe = RECIPES.get(index);
+        if (!recipe.enabled.getAsBoolean()) {
+            return null;
+        }
+        return recipe;
+    }
+
+    public int index() {
+        return RECIPES.indexOf(this);
     }
 
     private static final List<ShipAssemblyRecipe> RECIPES = List.of(
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.drakkar"), () -> new ItemStack(NapoleonShipMod.DRAKKAR_ITEM.get()), List.of(tag(ItemTags.LOGS, 16), item(Items.STICK, 8), item(Items.WHITE_WOOL, 4), item(Items.STRING, 4), item(Items.LEATHER, 2))),
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.quinquereme"), () -> new ItemStack(NapoleonShipMod.QUINQUEREME_ITEM.get()), List.of(tag(ItemTags.LOGS, 28), item(Items.STICK, 16), item(Items.RED_WOOL, 6), item(Items.COPPER_INGOT, 12), item(Items.IRON_INGOT, 4), item(Items.STRING, 6), item(Items.GOLD_NUGGET, 8))),
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.napoleon_ship"), () -> new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get()), List.of(tag(ItemTags.LOGS, 48), item(Items.IRON_INGOT, 32), item(Items.IRON_BLOCK, 4), item(Items.BLAST_FURNACE, 1), item(Items.REDSTONE, 16), item(Items.COPPER_INGOT, 16), item(Items.WHITE_WOOL, 8), item(Items.BLUE_DYE, 2), item(Items.RED_DYE, 2), item(Items.WHITE_DYE, 2), item(Items.COAL_BLOCK, 4))));
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.drakkar"), () -> new ItemStack(NapoleonShipMod.DRAKKAR_ITEM.get()), List.of(tag(ItemTags.LOGS, 16), item(Items.STICK, 8), item(Items.WHITE_WOOL, 4), item(Items.STRING, 4), item(Items.LEATHER, 2)), ShipsConfig.DRAKKAR),
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.quinquereme"), () -> new ItemStack(NapoleonShipMod.QUINQUEREME_ITEM.get()), List.of(tag(ItemTags.LOGS, 28), item(Items.STICK, 16), item(Items.RED_WOOL, 6), item(Items.COPPER_INGOT, 12), item(Items.IRON_INGOT, 4), item(Items.STRING, 6), item(Items.GOLD_NUGGET, 8)), ShipsConfig.QUINQUEREME),
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.napoleon_ship"), () -> new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get()), List.of(tag(ItemTags.LOGS, 48), item(Items.IRON_INGOT, 32), item(Items.IRON_BLOCK, 4), item(Items.BLAST_FURNACE, 1), item(Items.REDSTONE, 16), item(Items.COPPER_INGOT, 16), item(Items.WHITE_WOOL, 8), item(Items.BLUE_DYE, 2), item(Items.RED_DYE, 2), item(Items.WHITE_DYE, 2), item(Items.COAL_BLOCK, 4)), ShipsConfig.NAPOLEON_SHIP));
 
     private static CountedNeed item(ItemLike item, int count) {
         Item resolved = item.asItem();
