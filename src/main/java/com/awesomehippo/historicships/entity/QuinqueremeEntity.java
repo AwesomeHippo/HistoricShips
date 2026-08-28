@@ -248,9 +248,6 @@ public class QuinqueremeEntity extends OarShipEntity {
             return false;
         }
         this.entityData.set(DATA_TOWER_UNTIL, (int) this.level().getGameTime() + TOWER_COOLDOWN);
-        if (this.level().isClientSide()) {
-            this.playTowerFireFx();
-        }
         return true;
     }
 
@@ -294,25 +291,8 @@ public class QuinqueremeEntity extends OarShipEntity {
             server.addFreshEntity(stone);
         }
 
-        server.playSound(null, mx, my, mz, SoundEvents.STONE_BUTTON_CLICK_OFF, SoundSource.NEUTRAL, 0.9F, 0.45F);
-        server.playSound(null, mx, my, mz, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.NEUTRAL, 0.75F, 0.55F + this.random.nextFloat() * 0.1F);
-        server.playSound(null, mx, my, mz, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 0.8F, 0.7F);
-        server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + bowX * 0.4, my, mz + bowZ * 0.4, 12, 0.2, 0.12, 0.2, 0.05);
-    }
-
-    private void playTowerFireFx() {
-        float yaw = this.getYRot() * Mth.DEG_TO_RAD;
-        double bowX = Mth.sin(yaw);
-        double bowZ = -Mth.cos(yaw);
-        double mx = this.getX() + bowX * (TOWER_MODEL_X * U) + bowX * 0.95;
-        double my = this.getY() + TOWER_MUZZLE_Y * U;
-        double mz = this.getZ() + bowZ * (TOWER_MODEL_X * U) + bowZ * 0.95;
-
-        this.level().playLocalSound(mx, my, mz, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 0.95F, 0.65F + this.random.nextFloat() * 0.15F, false);
-        this.level().playLocalSound(mx, my, mz, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.NEUTRAL, 0.7F, 0.5F, false);
-        for (int i = 0; i < 10; i++) {
-            this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + (this.random.nextDouble() - 0.5) * 0.4, my + this.random.nextDouble() * 0.25, mz + (this.random.nextDouble() - 0.5) * 0.4, bowX * 0.12, 0.04, bowZ * 0.12);
-            this.level().addParticle(ParticleTypes.CLOUD, mx + bowX * 0.2, my, mz + bowZ * 0.2, bowX * 0.08, 0.03, bowZ * 0.08);
-        }
+        server.playSound(null, mx, my, mz, SoundEvents.PISTON_EXTEND, SoundSource.NEUTRAL, 0.85F, 0.7F + this.random.nextFloat() * 0.1F);
+        server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + bowX * 0.4, my, mz + bowZ * 0.4, 16, 0.25, 0.15, 0.25, 0.06);
+        server.sendParticles(ParticleTypes.CLOUD, mx + bowX * 0.3, my, mz + bowZ * 0.3, 8, 0.18, 0.10, 0.18, 0.04);
     }
 }

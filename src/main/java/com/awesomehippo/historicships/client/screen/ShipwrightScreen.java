@@ -10,10 +10,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +53,6 @@ public class ShipwrightScreen extends AbstractContainerScreen<ShipwrightMenu> {
             return;
         }
         if (!recipe.matches(this.menu.getContainer()) || !recipe.canPlaceResult(this.menu.getContainer())) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F));
             return;
         }
         if (this.menu.clickMenuButton(this.minecraft.player, recipeIndex)) {

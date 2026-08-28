@@ -25,6 +25,7 @@ import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
 import com.awesomehippo.historicships.network.RamHitPacket;
+import com.awesomehippo.historicships.network.ToggleSailsPacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -176,7 +177,7 @@ public class NapoleonShipClient {
                 }
             }
             if (NapoleonShipKeys.TOGGLE_SAILS.consumeClick()) {
-                napoleon.toggleSails();
+                ClientPacketDistributor.sendToServer(new ToggleSailsPacket(napoleon.getId()));
             }
             return;
         }

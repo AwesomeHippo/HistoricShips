@@ -110,6 +110,8 @@ public class NapoleonShipEntity extends StoredShipEntity {
     private static final EntityDataAccessor<Integer> DATA_WATER = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_PRESSURE = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_BROADSIDE_UNTIL = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_SAILS_FURLED = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_BOOSTING = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final SimpleContainer engineItems = new SimpleContainer(NapoleonEngineMenu.ENGINE_SLOTS) {
         @Override
@@ -171,6 +173,8 @@ public class NapoleonShipEntity extends StoredShipEntity {
         builder.define(DATA_WATER, MAX_WATER / 2);
         builder.define(DATA_PRESSURE, 0);
         builder.define(DATA_BROADSIDE_UNTIL, 0);
+        builder.define(DATA_SAILS_FURLED, false);
+        builder.define(DATA_BOOSTING, false);
     }
 
     @Override
@@ -299,25 +303,27 @@ public class NapoleonShipEntity extends StoredShipEntity {
 
         if (!this.level().isClientSide()) {
             this.tickEngine();
+            boolean boost = this.serverHardSteam();
+            this.boosting = boost;
+            this.entityData.set(DATA_BOOSTING, boost);
         }
 
         this.tickMovement();
+        if (this.sailToggleCooldown > 0) {
+            this.sailToggleCooldown--;
+        }
 
         if (this.level().isClientSide()) {
             this.updateSailFillState();
             this.updateSailDeployState();
-            if (this.sailToggleCooldown > 0) {
-                this.sailToggleCooldown--;
-            }
             this.tickSteamPlume();
         }
     }
 
     private void updateSailFillState() {
-        double speed = this.getDeltaMovement().horizontalDistance();
-
+        double speed = Math.hypot(this.getX() - this.xo, this.getZ() - this.zo);
         float target = Mth.clamp((float) (speed / 0.45D), 0.0F, 1.0F);
-        if (this.boosting) {
+        if (this.isBoosting()) {
             target = Mth.clamp(target + 0.22F, 0.0F, 1.0F);
         }
 
@@ -334,21 +340,18 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     public boolean toggleSails() {
-        if (!this.canToggleSails()) {
+        if (this.level().isClientSide() || this.sailToggleCooldown > 0) {
             return this.sailsFurled;
         }
         this.sailsFurled = !this.sailsFurled;
-
+        this.entityData.set(DATA_SAILS_FURLED, this.sailsFurled);
         this.sailToggleCooldown = SAIL_TOGGLE_COOLDOWN_TICKS;
+        this.level().playSound(null, this.getX(), this.getY() + 4.0, this.getZ(), SoundEvents.WOOL_PLACE, SoundSource.NEUTRAL, 0.9F, this.sailsFurled ? 0.8F : 1.05F);
         return this.sailsFurled;
-    }
-
-    public boolean canToggleSails() {
-        return this.sailToggleCooldown <= 0;
     }
 
     public boolean areSailsFurled() {
-        return this.sailsFurled;
+        return this.level().isClientSide() ? this.entityData.get(DATA_SAILS_FURLED) : this.sailsFurled;
     }
 
     public float getSailDeploy() {
@@ -356,9 +359,10 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     private void updateSailDeployState() {
-        float target = this.sailsFurled ? 0.0F : 1.0F;
+        boolean furled = this.areSailsFurled();
+        float target = furled ? 0.0F : 1.0F;
 
-        float ease = this.sailsFurled ? 0.028F : 0.022F;
+        float ease = furled ? 0.028F : 0.022F;
         this.sailDeploy += (target - this.sailDeploy) * ease;
         if (Math.abs(this.sailDeploy - target) < 0.002F) {
             this.sailDeploy = target;
@@ -373,9 +377,9 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     private void tickSteamPlume() {
-        double speed = this.getDeltaMovement().horizontalDistance();
+        double speed = Math.hypot(this.getX() - this.xo, this.getZ() - this.zo);
         boolean underWay = speed > 0.02;
-        boolean boost = this.boosting;
+        boolean boost = this.isBoosting();
         float steam = this.getPressure() / 100.0F;
         if (steam < 0.05F && !boost) {
             if (this.random.nextInt(8) != 0) {
@@ -499,6 +503,9 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     public boolean isBoosting() {
+        if (this.level().isClientSide() && !this.isLocalInstanceAuthoritative()) {
+            return this.entityData.get(DATA_BOOSTING);
+        }
         return this.boosting;
     }
 
@@ -520,70 +527,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
             return false;
         }
         this.entityData.set(DATA_BROADSIDE_UNTIL, (int) this.level().getGameTime() + BROADSIDE_COOLDOWN);
-
-        if (this.level().isClientSide()) {
-            float yaw = this.getYRot() * Mth.DEG_TO_RAD;
-
-            double bowX = Mth.sin(yaw);
-            double bowZ = -Mth.cos(yaw);
-            double stbdX = -bowZ;
-            double stbdZ = bowX;
-            double beam = HALF_BEAM;
-            double stationStep = 5.0 * U;
-
-            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 0.9F, 1.15F + this.random.nextFloat() * 0.15F, false);
-            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 0.55F, 0.85F + this.random.nextFloat() * 0.1F, false);
-            for (int s = -1; s <= 1; s += 2) {
-                for (int g = -4; g <= 4; g++) {
-                    for (int deck = 0; deck < 2; deck++) {
-                        double ox = this.getX() + stbdX * beam * s + bowX * g * stationStep + (this.random.nextDouble() - 0.5) * 0.35;
-                        double oy = this.getY() + (0.95 + deck * 0.55) * (MODEL_SCALE / 2.75F) + this.random.nextDouble() * 0.2;
-                        double oz = this.getZ() + stbdZ * beam * s + bowZ * g * stationStep + (this.random.nextDouble() - 0.5) * 0.35;
-
-                        double out = 0.22 + this.random.nextDouble() * 0.14;
-                        double rise = 0.04 + this.random.nextDouble() * 0.06;
-
-                        for (int p = 0; p < 4; p++) {
-                            this.level().addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, ox, oy, oz, stbdX * s * out, rise, stbdZ * s * out);
-                        }
-                        for (int p = 0; p < 3; p++) {
-                            this.level().addParticle(ParticleTypes.LARGE_SMOKE, ox + stbdX * s * 0.15, oy + 0.05, oz + stbdZ * s * 0.15, stbdX * s * (out * 1.25), rise * 0.8, stbdZ * s * (out * 1.25));
-                        }
-                        this.level().addParticle(ParticleTypes.SMOKE, ox, oy, oz, stbdX * s * 0.28, 0.03, stbdZ * s * 0.28);
-
-                        if (this.random.nextBoolean()) {
-                            this.level().addParticle(ParticleTypes.FLAME, ox + stbdX * s * 0.2, oy, oz + stbdZ * s * 0.2, stbdX * s * 0.08, 0.02, stbdZ * s * 0.08);
-                        }
-                    }
-                }
-            }
-
-            fireBowChasersFx(bowX, bowZ, stbdX, stbdZ);
-        }
         return true;
-    }
-
-    private void fireBowChasersFx(double bowX, double bowZ, double stbdX, double stbdZ) {
-        double bowDist = 60.5F * U;
-        double gunY = this.getY() + 6.4F * U + 0.2;
-        double boomX = this.getX() + bowX * bowDist;
-        double boomZ = this.getZ() + bowZ * bowDist;
-
-        this.level().playLocalSound(boomX, gunY, boomZ, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 0.55F, 1.15F + this.random.nextFloat() * 0.15F, false);
-
-        double[] lateral = {-2.9F * U, 2.9F * U};
-        for (double lat : lateral) {
-
-            double ox = this.getX() + bowX * (bowDist + 0.9) + stbdX * lat;
-            double oz = this.getZ() + bowZ * (bowDist + 0.9) + stbdZ * lat;
-            for (int i = 0; i < 8; i++) {
-                double speed = 0.18 + this.random.nextDouble() * 0.2;
-                this.level().addParticle(ParticleTypes.SMOKE, ox + (this.random.nextDouble() - 0.5) * 0.1, gunY + this.random.nextDouble() * 0.15, oz + (this.random.nextDouble() - 0.5) * 0.1, bowX * speed, 0.02, bowZ * speed);
-            }
-            for (int i = 0; i < 3; i++) {
-                this.level().addParticle(ParticleTypes.FLAME, ox + bowX * 0.15, gunY, oz + bowZ * 0.15, bowX * 0.08, 0.01, bowZ * 0.08);
-            }
-        }
     }
 
     public void serverFireBowShells(@Nullable LivingEntity shooter) {
@@ -618,7 +562,30 @@ public class NapoleonShipEntity extends StoredShipEntity {
             server.addFreshEntity(shell);
         }
 
-        server.playSound(null, this.getX(), gunY, this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 1.15F, 0.75F + this.random.nextFloat() * 0.15F);
+        server.playSound(null, this.getX(), gunY, this.getZ(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.NEUTRAL, 1.15F, 0.72F + this.random.nextFloat() * 0.08F);
+        this.serverGunSmoke(server, bowX, bowZ, stbdX, stbdZ, gunY, bowDist, lateral);
+    }
+
+    private void serverGunSmoke(ServerLevel server, double bowX, double bowZ, double stbdX, double stbdZ, double gunY, double bowDist, double[] lateral) {
+        double beam = HALF_BEAM;
+        double stationStep = 5.0 * U;
+        for (int s = -1; s <= 1; s += 2) {
+            for (int g = -4; g <= 4; g++) {
+                for (int deck = 0; deck < 2; deck++) {
+                    double ox = this.getX() + stbdX * beam * s + bowX * g * stationStep;
+                    double oy = this.getY() + (0.95 + deck * 0.55) * (MODEL_SCALE / 2.75F);
+                    double oz = this.getZ() + stbdZ * beam * s + bowZ * g * stationStep;
+                    server.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE, ox, oy, oz, 4, 0.12, 0.08, 0.12, 0.04);
+                    server.sendParticles(ParticleTypes.SMOKE, ox, oy, oz, 2, 0.08, 0.05, 0.08, 0.03);
+                }
+            }
+        }
+        for (double lat : lateral) {
+            double ox = this.getX() + bowX * (bowDist + 0.9) + stbdX * lat;
+            double oz = this.getZ() + bowZ * (bowDist + 0.9) + stbdZ * lat;
+            server.sendParticles(ParticleTypes.SMOKE, ox, gunY, oz, 6, 0.10, 0.08, 0.10, 0.04);
+            server.sendParticles(ParticleTypes.FLAME, ox, gunY, oz, 2, 0.04, 0.04, 0.04, 0.01);
+        }
     }
 
     public int getBroadsideCooldown() {

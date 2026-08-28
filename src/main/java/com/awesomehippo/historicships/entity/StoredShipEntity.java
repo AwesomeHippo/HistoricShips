@@ -636,7 +636,6 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             if (this.isLocalInstanceAuthoritative()) {
                 RamHitPacket.send(this.getId(), target.getId(), (float) closing);
                 this.ramCooldown = RAM_COOLDOWN_TICKS;
-                this.ramImpact(bowX, bowZ, closing);
             }
             return;
         }
@@ -719,23 +718,6 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             server.sendParticles(ParticleTypes.SPLASH, hx, hy, hz, 28, 0.45, 0.22, 0.45, 0.16);
             server.sendParticles(ParticleTypes.BUBBLE, hx, hy - 0.12, hz, 14, 0.32, 0.12, 0.32, 0.06);
             server.sendParticles(ParticleTypes.CLOUD, hx + bowX * 0.2, hy + 0.12, hz + bowZ * 0.2, 8, 0.22, 0.10, 0.22, 0.02);
-            return;
-        }
-        this.level().playLocalSound(hx, hy, hz, SoundEvents.IRON_GOLEM_ATTACK, SoundSource.NEUTRAL, 1.15F, 0.48F, false);
-        this.level().playLocalSound(hx, hy, hz, SoundEvents.WOOD_BREAK, SoundSource.NEUTRAL, 1.15F, 0.5F, false);
-        this.level().playLocalSound(hx, hy, hz, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 0.95F, 0.65F, false);
-        int n = 14 + (int) (Mth.clamp(closing, 0.08, 1.2) * 16);
-        for (int i = 0; i < n; i++) {
-            double vx = bowX * (0.08 + this.random.nextDouble() * 0.24) + (this.random.nextDouble() - 0.5) * 0.16;
-            double vy = 0.05 + this.random.nextDouble() * 0.20;
-            double vz = bowZ * (0.08 + this.random.nextDouble() * 0.24) + (this.random.nextDouble() - 0.5) * 0.16;
-            this.level().addParticle(wood, hx, hy, hz, vx, vy, vz);
-            this.level().addParticle(ParticleTypes.SPLASH, hx + (this.random.nextDouble() - 0.5) * 0.45, hy, hz + (this.random.nextDouble() - 0.5) * 0.45, vx * 0.35, 0.08, vz * 0.35);
-        }
-        for (int i = 0; i < 8; i++) {
-            this.level().addParticle(copper, hx, hy + 0.04, hz, (this.random.nextDouble() - 0.5) * 0.12, 0.04, (this.random.nextDouble() - 0.5) * 0.12);
-            this.level().addParticle(ParticleTypes.CLOUD, hx + bowX * 0.18, hy + 0.1, hz + bowZ * 0.18, bowX * 0.07, 0.03, bowZ * 0.07);
-            this.level().addParticle(ParticleTypes.BUBBLE, hx, hy - 0.08, hz, (this.random.nextDouble() - 0.5) * 0.08, 0.02, (this.random.nextDouble() - 0.5) * 0.08);
         }
     }
 
@@ -749,9 +731,11 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         double x = this.getX();
         double y = this.getY() + 1.0;
         double z = this.getZ();
-        level.playSound(null, x, y, z, SoundEvents.WOOD_BREAK, SoundSource.NEUTRAL, 1.4F, 0.55F);
         level.playSound(null, x, y, z, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.2F, 0.7F);
-        level.sendParticles(ParticleTypes.SPLASH, x, y + 0.2, z, 50, this.getBbWidth() * 0.3, 0.3, this.getBbWidth() * 0.3, 0.15);
+        float w = this.getBbWidth();
+        level.sendParticles(ParticleTypes.SPLASH, x, y + 0.15, z, 80, w * 0.35, 0.25, w * 0.35, 0.22);
+        level.sendParticles(ParticleTypes.BUBBLE, x, y - 0.2, z, 40, w * 0.28, 0.35, w * 0.28, 0.08);
+        level.sendParticles(ParticleTypes.BUBBLE_POP, x, y + 0.35, z, 18, w * 0.3, 0.15, w * 0.3, 0.02);
     }
 
     private void tickSinking() {
@@ -761,33 +745,45 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         }
         this.sinkTicks++;
         this.entityData.set(DATA_SINK_TICKS, this.sinkTicks);
-        if (this.sinkTicks % 25 == 0) {
-            this.level().playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.WOOD_HIT, SoundSource.NEUTRAL, 0.9F, 0.45F + this.random.nextFloat() * 0.1F);
+        if (this.sinkTicks % 12 == 0) {
+            this.level().playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 0.45F, 0.75F + this.random.nextFloat() * 0.2F);
         }
         if (this.sinkTicks >= SINK_DURATION && this.level() instanceof ServerLevel server) {
             this.ejectPassengers();
             double x = this.getX();
             double y = this.getY();
             double z = this.getZ();
-            server.playSound(null, x, y + 3.0, z, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.6F, 0.6F);
-            server.sendParticles(ParticleTypes.BUBBLE, x, y + 1.0, z, 70, 1.4, 0.8, 1.4, 0.12);
-            server.sendParticles(ParticleTypes.SPLASH, x, y + 3.2, z, 60, 1.2, 0.3, 1.2, 0.18);
+            server.playSound(null, x, y + 3.0, z, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.6F, 0.55F);
+            server.playSound(null, x, y + 1.0, z, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.1F, 0.8F);
+            server.sendParticles(ParticleTypes.BUBBLE, x, y + 0.4, z, 90, 1.6, 0.9, 1.6, 0.14);
+            server.sendParticles(ParticleTypes.BUBBLE_COLUMN_UP, x, y + 0.2, z, 40, 1.2, 0.4, 1.2, 0.08);
+            server.sendParticles(ParticleTypes.SPLASH, x, y + 2.4, z, 90, 1.4, 0.35, 1.4, 0.22);
+            server.sendParticles(ParticleTypes.BUBBLE_POP, x, y + 2.2, z, 30, 1.1, 0.25, 1.1, 0.04);
             this.destroyShip(server, this.sinkingBreaker, false);
         }
     }
 
     private void spawnSinkParticles() {
-        double spread = this.getBbWidth() * 0.35;
-        int n = 1 + this.random.nextInt(2) + this.entityData.get(DATA_SINK_TICKS) / 40;
-        for (int i = 0; i < n; i++) {
+        float t = this.entityData.get(DATA_SINK_TICKS) / (float) SINK_DURATION;
+        double spread = this.getBbWidth() * (0.32 + t * 0.28);
+        double waterY = this.getY() + 0.35 + (1.0F - t) * 0.9;
+        int bubbles = 3 + this.random.nextInt(3) + (int) (t * 5);
+        for (int i = 0; i < bubbles; i++) {
             double px = this.getX() + (this.random.nextDouble() - 0.5) * spread * 2.0;
             double pz = this.getZ() + (this.random.nextDouble() - 0.5) * spread * 2.0;
-            this.level().addParticle(ParticleTypes.BUBBLE, px, this.getY() + 0.3 + this.random.nextDouble() * 0.8, pz, 0.0, 0.05 + this.random.nextDouble() * 0.04, 0.0);
+            this.level().addParticle(ParticleTypes.BUBBLE, px, this.getY() + 0.15 + this.random.nextDouble() * (0.5 + t * 0.6), pz, 0.0, 0.06 + this.random.nextDouble() * 0.07, 0.0);
+            if (this.random.nextBoolean()) {
+                this.level().addParticle(ParticleTypes.BUBBLE_COLUMN_UP, px, this.getY() + 0.1, pz, 0.0, 0.10 + this.random.nextDouble() * 0.06, 0.0);
+            }
         }
-        if (this.entityData.get(DATA_SINK_TICKS) < 40 && this.random.nextInt(3) == 0) {
+        int splashes = 2 + this.random.nextInt(2) + (int) (t * 3);
+        for (int i = 0; i < splashes; i++) {
             double px = this.getX() + (this.random.nextDouble() - 0.5) * spread * 2.0;
             double pz = this.getZ() + (this.random.nextDouble() - 0.5) * spread * 2.0;
-            this.level().addParticle(ParticleTypes.SPLASH, px, this.getY() + 1.1, pz, 0.0, 0.06, 0.0);
+            this.level().addParticle(ParticleTypes.SPLASH, px, waterY, pz, (this.random.nextDouble() - 0.5) * 0.12, 0.08 + this.random.nextDouble() * 0.06, (this.random.nextDouble() - 0.5) * 0.12);
+            if (this.random.nextInt(3) == 0) {
+                this.level().addParticle(ParticleTypes.BUBBLE_POP, px, waterY + 0.05, pz, 0.0, 0.02, 0.0);
+            }
         }
     }
 
@@ -812,8 +808,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         this.markHurt();
         this.gameEvent(GameEvent.ENTITY_DAMAGE, attacker);
 
-        level.playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.WOOD_HIT, SoundSource.NEUTRAL, 1.15F, 0.75F + this.random.nextFloat() * 0.2F);
-        level.playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 0.45F, 0.9F);
+        level.playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 1.15F, 0.75F + this.random.nextFloat() * 0.2F);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY() + 1.2, this.getZ(), 14, 0.8, 0.5, 0.8, 0.06);
         level.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 1.4, this.getZ(), 6, 0.5, 0.3, 0.5, 0.02);
 

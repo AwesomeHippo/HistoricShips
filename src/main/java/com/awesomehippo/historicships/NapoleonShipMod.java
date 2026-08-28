@@ -19,6 +19,7 @@ import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
 import com.awesomehippo.historicships.network.RamHitPacket;
 import com.awesomehippo.historicships.network.SailPaintPacket;
+import com.awesomehippo.historicships.network.ToggleSailsPacket;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -165,6 +166,7 @@ public class NapoleonShipMod {
         registrar.playToServer(FireBowShellPacket.TYPE, FireBowShellPacket.STREAM_CODEC, FireBowShellPacket::handle);
         registrar.playToServer(FireTowerStonePacket.TYPE, FireTowerStonePacket.STREAM_CODEC, FireTowerStonePacket::handle);
         registrar.playToServer(OpenEnginePacket.TYPE, OpenEnginePacket.STREAM_CODEC, OpenEnginePacket::handle);
+        registrar.playToServer(ToggleSailsPacket.TYPE, ToggleSailsPacket.STREAM_CODEC, ToggleSailsPacket::handle);
         registrar.playToServer(RamHitPacket.TYPE, RamHitPacket.STREAM_CODEC, RamHitPacket::handle);
         registrar.playBidirectional(SailPaintPacket.TYPE, SailPaintPacket.STREAM_CODEC, SailPaintPacket::handleServer, SailPaintPacket::handleClient);
     }

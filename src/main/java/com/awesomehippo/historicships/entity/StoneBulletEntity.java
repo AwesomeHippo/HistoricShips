@@ -142,7 +142,6 @@ public class StoneBulletEntity extends ThrowableItemProjectile {
             server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), x, y, z, 18, 0.22, 0.18, 0.22, 0.08);
             server.sendParticles(ParticleTypes.CLOUD, x, y, z, 6, 0.15, 0.1, 0.15, 0.02);
             server.playSound(null, x, y, z, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 1.1F, 0.75F + this.random.nextFloat() * 0.2F);
-            server.playSound(null, x, y, z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 0.35F, 1.4F + this.random.nextFloat() * 0.15F);
         }
         this.discard();
     }

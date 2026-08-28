@@ -132,7 +132,7 @@ public class CannonballEntity extends ThrowableItemProjectile {
         if (this.level() instanceof ServerLevel server) {
             ShipProjectileHits.splashShips(server, this, this.sourceShip, this.position(), SPLASH_RADIUS, StoredShipEntity.CANNON_HULL_DAMAGE);
             server.explode(this, this.getX(), this.getY(), this.getZ(), EXPLOSION_POWER, false, Level.ExplosionInteraction.TNT);
-            server.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 2.2F, 0.75F + this.random.nextFloat() * 0.15F);
+            server.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.1F, 0.7F + this.random.nextFloat() * 0.1F);
         }
         this.discard();
     }
@@ -141,7 +141,7 @@ public class CannonballEntity extends ThrowableItemProjectile {
         if (!ship.damageHull(server, damage, this)) {
             return;
         }
-        server.playSound(null, ship.getX(), ship.getY() + 1.0, ship.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 1.05F, 1.1F + this.random.nextFloat() * 0.1F);
+        server.playSound(null, ship.getX(), ship.getY() + 1.0, ship.getZ(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 1.05F, 0.7F + this.random.nextFloat() * 0.1F);
         server.sendParticles(ParticleTypes.EXPLOSION, ship.getX(), ship.getY() + 1.2, ship.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
         server.sendParticles(ParticleTypes.SMOKE, ship.getX(), ship.getY() + 1.5, ship.getZ(), 8, 0.6, 0.4, 0.6, 0.02);
     }
