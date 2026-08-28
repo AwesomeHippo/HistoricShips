@@ -24,12 +24,18 @@ public class DrakkarEntity extends OarShipEntity {
     public static final int MAX_PASSENGERS = 4;
     public static final int CARGO_ROWS = 3;
     public static final int MAX_HULL = 40;
+    private static final float U = MODEL_SCALE / 16.0F;
+    private static final ShipHull HULL = ShipHull.ofModel(U,
+            -36.4F, 2.90F,
+            -30.5F, 6.55F,
+            30.5F, 6.55F,
+            37.2F, 2.80F);
 
     private static final EntityDataAccessor<Byte> DATA_SAIL_STRIPE = SynchedEntityData.defineId(DrakkarEntity.class, EntityDataSerializers.BYTE);
 
     private static final OarShipStats STATS = new OarShipStats(
             MODEL_SCALE,
-            6.5F, 0.06F, 34.0F, 8.0F, 0.20F, 42.0F, 22.0F, 44.0F,
+            6.55F, 0.03F, 37.2F, 8.55F, 0.10F, 42.0F, 22.0F, 44.0F,
             MAX_PASSENGERS,
             new float[][] {{18.0F, 0.0F}, {8.0F, -2.8F}, {8.0F, 2.8F}, {-16.0F, 0.0F}},
             0.28F, 5.3F,
@@ -61,6 +67,11 @@ public class DrakkarEntity extends OarShipEntity {
     }
 
     @Override
+    protected ShipHull hullShape() {
+        return HULL;
+    }
+
+    @Override
     protected int cargoRows() {
         return CARGO_ROWS;
     }
@@ -76,6 +87,14 @@ public class DrakkarEntity extends OarShipEntity {
 
     public void setSailStripe(DrakkarSailStripe stripe) {
         this.entityData.set(DATA_SAIL_STRIPE, stripe.id());
+    }
+
+    @Override
+    protected void writeDropStack(ItemStack stack) {
+        DrakkarSailStripe stripe = this.getSailStripe();
+        if (stripe != DrakkarSailStripe.RED) {
+            stack.set(NapoleonShipMod.SHIP_SAIL_STRIPE.get(), (int) stripe.id());
+        }
     }
 
     @Override

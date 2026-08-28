@@ -4,12 +4,17 @@ import com.awesomehippo.historicships.NapoleonShipMod;
 import com.awesomehippo.historicships.client.model.DrakkarModel;
 import com.awesomehippo.historicships.client.model.NapoleonShipModel;
 import com.awesomehippo.historicships.client.model.QuinqueremeModel;
+import com.awesomehippo.historicships.client.model.QuinqueremePaintModel;
 import com.awesomehippo.historicships.client.renderer.DrakkarRenderer;
 import com.awesomehippo.historicships.client.renderer.NapoleonShipRenderer;
 import com.awesomehippo.historicships.client.renderer.QuinqueremeRenderer;
+import com.awesomehippo.historicships.client.renderer.SailPaintRenderType;
+import com.awesomehippo.historicships.client.renderer.SailPaintTextures;
 import com.awesomehippo.historicships.client.screen.NapoleonEngineScreen;
+import com.awesomehippo.historicships.client.screen.SailPaintScreen;
 import com.awesomehippo.historicships.client.screen.ShipwrightScreen;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
+import com.awesomehippo.historicships.entity.DrakkarSailStripe;
 import com.awesomehippo.historicships.entity.NapoleonShipEntity;
 import com.awesomehippo.historicships.entity.OarShipEntity;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
@@ -19,6 +24,7 @@ import com.awesomehippo.historicships.item.HistoricShipItem;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
+import com.awesomehippo.historicships.network.RamHitPacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -27,18 +33,24 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @Mod(value = NapoleonShipMod.MODID, dist = Dist.CLIENT)
 public class NapoleonShipClient {
@@ -72,19 +84,50 @@ public class NapoleonShipClient {
         modBus.addListener(this::registerLayers);
         modBus.addListener(this::registerRenderers);
         modBus.addListener(this::registerScreens);
+        modBus.addListener(this::registerPipelines);
         modBus.addListener(NapoleonShipKeys::register);
 
+        RamHitPacket.clientSend = packet -> ClientPacketDistributor.sendToServer(packet);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderGui);
         NeoForge.EVENT_BUS.addListener(this::onComputeFov);
         NeoForge.EVENT_BUS.addListener(this::onItemTooltip);
+        NeoForge.EVENT_BUS.addListener(this::onEntityLeaveLevel);
+        NeoForge.EVENT_BUS.addListener(this::onLoggingOut);
+        NeoForge.EVENT_BUS.addListener(this::onSailBrush);
+    }
+
+    private void onSailBrush(PlayerInteractEvent.EntityInteract event) {
+        if (!event.getLevel().isClientSide() || !(event.getTarget() instanceof QuinqueremeEntity ship)) {
+            return;
+        }
+        if (event.getItemStack().is(NapoleonShipMod.SAIL_BRUSH.get()) && ship.canEditSail(event.getEntity())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            SailPaintScreen.open(ship);
+        }
+    }
+
+    private void onEntityLeaveLevel(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof QuinqueremeEntity ship) {
+            SailPaintTextures.release(ship.getId());
+        }
+    }
+
+    private void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        SailPaintTextures.clear();
     }
 
     private void onItemTooltip(ItemTooltipEvent event) {
-        if (event.getItemStack().getItem() instanceof HistoricShipItem shipItem) {
-            Integer hull = event.getItemStack().get(NapoleonShipMod.SHIP_HULL.get());
+        ItemStack stack = event.getItemStack();
+        if (stack.getItem() instanceof HistoricShipItem) {
+            Integer hull = stack.get(NapoleonShipMod.SHIP_HULL.get());
             if (hull != null) {
-                event.getToolTip().add(Component.translatable("item.historicships.hull", hull, shipItem.getMaxHull()));
+                event.getToolTip().add(Component.translatable("item.historicships.hull", hull));
+            }
+            Integer stripe = stack.get(NapoleonShipMod.SHIP_SAIL_STRIPE.get());
+            if (stripe != null) {
+                event.getToolTip().add(Component.translatable("item.historicships.sail_stripe", Component.translatable("color.minecraft." + DrakkarSailStripe.byId(stripe.byteValue()).dye().getName())));
             }
         }
     }
@@ -94,10 +137,15 @@ public class NapoleonShipClient {
         event.register(NapoleonShipMod.ENGINE_MENU.get(), NapoleonEngineScreen::new);
     }
 
+    private void registerPipelines(RegisterRenderPipelinesEvent event) {
+        event.registerPipeline(SailPaintRenderType.PIPELINE);
+    }
+
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(NapoleonShipModel.LAYER_LOCATION, NapoleonShipModel::createBodyLayer);
         event.registerLayerDefinition(DrakkarModel.LAYER_LOCATION, DrakkarModel::createBodyLayer);
         event.registerLayerDefinition(QuinqueremeModel.LAYER_LOCATION, QuinqueremeModel::createBodyLayer);
+        event.registerLayerDefinition(QuinqueremePaintModel.LAYER_LOCATION, QuinqueremePaintModel::createBodyLayer);
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {

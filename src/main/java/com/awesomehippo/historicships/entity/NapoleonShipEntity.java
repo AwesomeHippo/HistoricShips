@@ -44,9 +44,22 @@ public class NapoleonShipEntity extends StoredShipEntity {
     public static final int MAX_ANIMALS = 4;
     public static final int MAX_HULL = 80;
     private static final float U = MODEL_SCALE / 16.0F;
-    private static final float HALF_BEAM = 11.0F * U + 0.08F;
-    private static final float HALF_LOA = 56.5F * U;
-    private static final float HULL_HEIGHT = 13.0F * U + 0.28F;
+    private static final float HALF_BEAM = 11.40F * U;
+    private static final float HALF_LOA = 60.5F * U;
+    private static final float HULL_HEIGHT = 16.0F * U;
+    private static final ShipHull HULL = ShipHull.ofModel(U,
+            -55.8F, 7.10F,
+            -54.5F, 8.55F,
+            -52.0F, 10.40F,
+            -19.5F, 10.40F,
+            -18.5F, 11.48F,
+            18.5F, 11.48F,
+            19.5F, 10.40F,
+            41.5F, 10.40F,
+            42.0F, 7.55F,
+            56.0F, 7.55F,
+            57.6F, 6.25F,
+            60.5F, 5.10F);
     private static final float CULL_HALF_LOA = 94.0F * U;
     private static final float CULL_HALF_BEAM = 20.0F * U;
     private static final float CULL_HEIGHT = 98.0F * U;
@@ -163,6 +176,11 @@ public class NapoleonShipEntity extends StoredShipEntity {
     @Override
     public int getMaxHull() {
         return MAX_HULL;
+    }
+
+    @Override
+    protected ShipHull hullShape() {
+        return HULL;
     }
 
     @Override

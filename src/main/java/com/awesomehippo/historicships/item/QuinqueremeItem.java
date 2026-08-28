@@ -1,9 +1,12 @@
 package com.awesomehippo.historicships.item;
 
+import com.awesomehippo.historicships.NapoleonShipMod;
 import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
+import com.awesomehippo.historicships.entity.SailPaint;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class QuinqueremeItem extends HistoricShipItem {
@@ -24,5 +27,15 @@ public class QuinqueremeItem extends HistoricShipItem {
     @Override
     public boolean isEnabled() {
         return ShipsConfig.QUINQUEREME.get();
+    }
+
+    @Override
+    protected void applyPlaceData(ItemStack stack, Entity boat) {
+        if (boat instanceof QuinqueremeEntity quinquereme) {
+            SailPaint.Data paint = stack.get(NapoleonShipMod.SHIP_SAIL_PAINT.get());
+            if (paint != null && SailPaint.isValid(paint.pixels())) {
+                quinquereme.setSailPaintData(paint.pixels());
+            }
+        }
     }
 }

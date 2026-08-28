@@ -66,7 +66,10 @@ public final class ShipProjectileHits {
             if (isFromSourceShip(sourceShip, ship) || isFriendlyFire(projectile.getOwner(), ship)) {
                 continue;
             }
-            double dist = ship.getBoundingBox().distanceToSqr(at);
+            if (!ship.hullContains(at, Math.max(projectile.getBbWidth() * 0.5, 0.2))) {
+                continue;
+            }
+            double dist = ship.hullDistance(at);
             if (dist < bestDist) {
                 bestDist = dist;
                 best = ship;
@@ -84,7 +87,7 @@ public final class ShipProjectileHits {
             if (isFromSourceShip(sourceShip, ship) || isFriendlyFire(projectile.getOwner(), ship)) {
                 continue;
             }
-            double dist = Math.sqrt(ship.getBoundingBox().distanceToSqr(at));
+            double dist = ship.hullDistance(at);
             if (dist > radius) {
                 continue;
             }

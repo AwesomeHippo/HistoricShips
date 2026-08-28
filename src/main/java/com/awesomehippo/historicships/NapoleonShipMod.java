@@ -6,7 +6,9 @@ import com.awesomehippo.historicships.entity.CannonballEntity;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 import com.awesomehippo.historicships.entity.NapoleonShipEntity;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
+import com.awesomehippo.historicships.entity.SailPaint;
 import com.awesomehippo.historicships.entity.StoneBulletEntity;
+import com.awesomehippo.historicships.entity.StoredShipEntity;
 import com.awesomehippo.historicships.item.DrakkarItem;
 import com.awesomehippo.historicships.item.NapoleonShipItem;
 import com.awesomehippo.historicships.item.QuinqueremeItem;
@@ -15,17 +17,24 @@ import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.OpenEnginePacket;
+import com.awesomehippo.historicships.network.RamHitPacket;
+import com.awesomehippo.historicships.network.SailPaintPacket;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -34,7 +43,11 @@ import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -54,6 +67,8 @@ public class NapoleonShipMod {
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MODID);
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SHIP_HULL = DATA_COMPONENTS.registerComponentType("hull", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SailPaint.Data>> SHIP_SAIL_PAINT = DATA_COMPONENTS.registerComponentType("sail_paint", builder -> builder.persistent(SailPaint.CODEC).networkSynchronized(SailPaint.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SHIP_SAIL_STRIPE = DATA_COMPONENTS.registerComponentType("sail_stripe", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     public static final DeferredHolder<EntityType<?>, EntityType<NapoleonShipEntity>> NAPOLEON_SHIP_ENTITY = ENTITIES.registerEntityType("napoleon_ship", NapoleonShipEntity::new, MobCategory.MISC, builder -> builder.sized(24.0F, 22.0F).clientTrackingRange(16).updateInterval(3).fireImmune());
     public static final DeferredHolder<EntityType<?>, EntityType<DrakkarEntity>> DRAKKAR_ENTITY = ENTITIES.registerEntityType("drakkar", DrakkarEntity::new, MobCategory.MISC, builder -> builder.sized(14.0F, 10.0F).clientTrackingRange(10).updateInterval(3).fireImmune());
@@ -77,6 +92,7 @@ public class NapoleonShipMod {
     public static final DeferredItem<NapoleonShipItem> NAPOLEON_SHIP_ITEM = ITEMS.registerItem("napoleon_ship", NapoleonShipItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<DrakkarItem> DRAKKAR_ITEM = ITEMS.registerItem("drakkar", DrakkarItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<QuinqueremeItem> QUINQUEREME_ITEM = ITEMS.registerItem("quinquereme", QuinqueremeItem::new, props -> props.stacksTo(1));
+    public static final DeferredItem<Item> SAIL_BRUSH = ITEMS.registerItem("sail_brush", Item::new, props -> props.stacksTo(1));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.historicships")).icon(NapoleonShipMod::tabIcon).displayItems((params, output) -> {
         output.accept(SHIPWRIGHT_WORKBENCH_ITEM.get());
@@ -85,6 +101,7 @@ public class NapoleonShipMod {
         }
         if (ShipsConfig.QUINQUEREME.get()) {
             output.accept(QUINQUEREME_ITEM.get());
+            output.accept(SAIL_BRUSH.get());
         }
         if (ShipsConfig.NAPOLEON_SHIP.get()) {
             output.accept(NAPOLEON_SHIP_ITEM.get());
@@ -101,6 +118,33 @@ public class NapoleonShipMod {
         DATA_COMPONENTS.register(modBus);
         modBus.addListener(this::registerPayloads);
         ShipsConfig.register(container);
+        NeoForge.EVENT_BUS.addListener(this::onRightClickItem);
+        NeoForge.EVENT_BUS.addListener(this::onRightClickBlock);
+        NeoForge.EVENT_BUS.addListener(this::onStartTracking);
+    }
+
+    private void onStartTracking(PlayerEvent.StartTracking event) {
+        if (event.getTarget() instanceof QuinqueremeEntity ship && event.getEntity() instanceof ServerPlayer player && ship.getSailPaint() != null) {
+            PacketDistributor.sendToPlayer(player, new SailPaintPacket(ship.getId(), ship.getSailPaint()));
+        }
+    }
+
+    private void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (repairAsPassenger(event.getEntity(), event.getHand())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
+    }
+
+    private void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (repairAsPassenger(event.getEntity(), event.getHand())) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+        }
+    }
+
+    private static boolean repairAsPassenger(Player player, InteractionHand hand) {
+        return player.getVehicle() instanceof StoredShipEntity ship && ship.tryRepair(player, hand);
     }
 
     private static ItemStack tabIcon() {
@@ -121,5 +165,7 @@ public class NapoleonShipMod {
         registrar.playToServer(FireBowShellPacket.TYPE, FireBowShellPacket.STREAM_CODEC, FireBowShellPacket::handle);
         registrar.playToServer(FireTowerStonePacket.TYPE, FireTowerStonePacket.STREAM_CODEC, FireTowerStonePacket::handle);
         registrar.playToServer(OpenEnginePacket.TYPE, OpenEnginePacket.STREAM_CODEC, OpenEnginePacket::handle);
+        registrar.playToServer(RamHitPacket.TYPE, RamHitPacket.STREAM_CODEC, RamHitPacket::handle);
+        registrar.playBidirectional(SailPaintPacket.TYPE, SailPaintPacket.STREAM_CODEC, SailPaintPacket::handleServer, SailPaintPacket::handleClient);
     }
 }

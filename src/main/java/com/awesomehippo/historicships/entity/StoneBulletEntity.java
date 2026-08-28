@@ -91,6 +91,9 @@ public class StoneBulletEntity extends ThrowableItemProjectile {
         if (ShipProjectileHits.isFriendlyFire(this.getOwner(), entity)) {
             return false;
         }
+        if (entity instanceof StoredShipEntity ship && !ship.hullContains(this.position(), Math.max(this.getBbWidth() * 0.5, 0.2))) {
+            return false;
+        }
         return true;
     }
 

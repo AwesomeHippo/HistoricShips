@@ -55,10 +55,21 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
 
     private static final int OAR_PAIRS = 16;
     private static final float REST_PITCH = 0.62F;
-    private static final float SAIL_MAX_BELLY = 6.5F;
-    private static final float ART_SAIL_MAX_BELLY = 5.8F;
+    public static final float SAIL_MAX_BELLY = 6.5F;
+    private static final float ART_SAIL_MAX_BELLY = 3.8F;
+
+    public static final float MAST_BASE_Y = 5.55F;
+    public static final float YARD_Y = 23.0F;
+    public static final float SAIL_X_OFF = 1.10F;
+    public static final float SAIL_THICK = 1.0F;
+    public static final float SAIL_HEIGHT = 17.5F;
+    public static final float SAIL_HALF_HEAD = 14.0F;
+    public static final float SAIL_HALF_FOOT = 13.0F;
     private static final float LINE = 0.30F;
-    private static final int SHIELD_COUNT = 12;
+    private static final float OAR_X0 = -32.0F;
+    private static final float OAR_PITCH = 4.0F;
+    private static final int SHIELD_COUNT = OAR_PAIRS - 1;
+    private static final float SHIELD_X0 = OAR_X0 + OAR_PITCH * 0.5F;
 
     private static final float SEG = 12.0F;
 
@@ -153,24 +164,24 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         body.addOrReplaceChild("bowC_rail_p", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b2, deckY, -hb2 - 0.02F, 4.2F, 0.52F, 0.45F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowC_rail_s", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b2, deckY, hb2 - 0.43F, 4.2F, 0.52F, 0.45F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("cutwater", CubeListBuilder.create().texOffs(TAN, TAN_V).addBox(b2 + 1.5F, -0.85F, -1.55F, 4.0F, 2.0F, 3.1F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("cutwater", CubeListBuilder.create().texOffs(TAN, TAN_V).addBox(b2 + 1.1F, -0.70F, -1.30F, 2.4F, 1.55F, 2.60F, d0), PartPose.ZERO);
         body.addOrReplaceChild("keel_bow", CubeListBuilder.create().texOffs(TAN, TAN_V).addBox(b0, -1.55F, -1.9F, 16.5F, 1.65F, 3.8F, d0), PartPose.ZERO);
 
-        final float ramX0 = b2 + 3.6F;
-        final float ramY = -0.15F;
+        final float rx = b2 + 3.05F;
+        final float ry = 0.05F;
+        body.addOrReplaceChild("ram_cowl0", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(rx - 0.20F, ry - 0.95F, -1.15F, 1.95F, 2.20F, 2.30F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_cowl1", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(rx + 1.55F, ry - 0.82F, -0.98F, 1.70F, 1.95F, 1.96F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_cowl2", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(rx + 3.05F, ry - 0.70F, -0.82F, 1.55F, 1.70F, 1.64F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_cowl3", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(rx + 4.40F, ry - 0.58F, -0.70F, 1.80F, 1.48F, 1.40F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("ram_socket", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0 - 2.0F, ramY - 0.35F, -1.35F, 2.6F, 2.55F, 2.70F, d0), PartPose.ZERO);
-
-        body.addOrReplaceChild("ram_c", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0, ramY + 0.35F, -0.48F, 6.2F, 1.05F, 0.96F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("ram_c_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0 + 5.9F, ramY + 0.42F, -0.38F, 1.35F, 0.90F, 0.76F, d0), PartPose.ZERO);
-
-        body.addOrReplaceChild("ram_u", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0, ramY + 1.35F, -0.42F, 5.1F, 0.85F, 0.84F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("ram_u_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0 + 4.8F, ramY + 1.40F, -0.34F, 1.15F, 0.72F, 0.68F, d0), PartPose.ZERO);
-
-        body.addOrReplaceChild("ram_l", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0, ramY - 0.45F, -0.42F, 5.1F, 0.85F, 0.84F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("ram_l_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0 + 4.8F, ramY - 0.38F, -0.34F, 1.15F, 0.72F, 0.68F, d0), PartPose.ZERO);
-
-        body.addOrReplaceChild("ram_collar", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(ramX0 - 0.55F, ramY - 0.55F, -1.55F, 0.70F, 2.85F, 3.10F, d0), PartPose.ZERO);
+        final float hx = rx + 6.00F;
+        body.addOrReplaceChild("ram_c", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx, ry - 0.08F, -0.42F, 2.20F, 0.48F, 0.84F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_c_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx + 2.10F, ry - 0.04F, -0.28F, 2.40F, 0.40F, 0.56F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_u", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx, ry + 0.46F, -0.36F, 1.90F, 0.36F, 0.72F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_u_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx + 1.80F, ry + 0.50F, -0.24F, 2.00F, 0.32F, 0.48F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_l", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx, ry - 0.48F, -0.36F, 1.90F, 0.36F, 0.72F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_l_tip", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx + 1.80F, ry - 0.44F, -0.24F, 2.00F, 0.32F, 0.48F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("ram_web", CubeListBuilder.create().texOffs(BRONZE, BRONZE_V).addBox(hx + 2.40F, ry - 0.42F, -0.18F, 1.00F, 1.28F, 0.36F, d0), PartPose.ZERO);
 
         final float stemX = b2 + 2.4F;
 
@@ -202,27 +213,27 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         body.addOrReplaceChild("eye_s_lid", CubeListBuilder.create().texOffs(GOLD, GOLD_V).addBox(eyeX - 0.15F, eyeY + 1.40F, hb1 - 0.10F, 2.3F, 0.28F, 0.28F, d0), PartPose.ZERO);
 
         final float artBaseX = stemX + 0.35F;
-        final float artBaseY = deckY + 0.85F;
-        final float artSparH = 16.5F;
-        final float artSailH = 11.5F;
-        final float artHalfH = 8.2F;
-        final float artHalfF = 7.4F;
+        final float artBaseY = deckY + 2.4F;
+        final float artSparH = 18.5F;
+        final float artSailH = 8.2F;
+        final float artHalfH = 7.2F;
+        final float artHalfF = 6.5F;
 
-        PartDefinition artemon = body.addOrReplaceChild("artemon", CubeListBuilder.create(), PartPose.offsetAndRotation(artBaseX, artBaseY, 0.0F, 0.0F, 0.0F, -0.58F));
+        PartDefinition artemon = body.addOrReplaceChild("artemon", CubeListBuilder.create(), PartPose.offsetAndRotation(artBaseX, artBaseY, 0.0F, 0.0F, 0.0F, -0.45F));
 
         artemon.addOrReplaceChild("spar", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.70F, 0.0F, -0.70F, 1.40F, artSparH, 1.40F, d0), PartPose.ZERO);
         artemon.addOrReplaceChild("spar_mid", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, artSparH * 0.35F, -0.55F, 1.10F, artSparH * 0.40F, 1.10F, d0), PartPose.ZERO);
         artemon.addOrReplaceChild("spar_tip", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.48F, artSparH - 1.2F, -0.48F, 0.96F, 1.5F, 0.96F, d0), PartPose.ZERO);
 
-        final float artYardHalf = artHalfH + 0.6F;
+        final float artYardHalf = artHalfH + (artHalfH * 2.0F / SquareSail.COLS) * SquareSail.GRID_OVERLAP + 0.25F;
         final float artYardSeg = 8.0F;
         int ayi = 0;
         for (float z = -artYardHalf; z < artYardHalf - 0.01F; z += artYardSeg) {
             float len = Math.min(artYardSeg, artYardHalf - z);
-            artemon.addOrReplaceChild("yard_" + (ayi++), CubeListBuilder.create().texOffs(RED, RED_V).addBox(-0.55F, artSparH - 0.55F, z, 1.10F, 1.10F, len, d0), PartPose.ZERO);
+            artemon.addOrReplaceChild("yard_" + (ayi++), CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, artSparH - 0.55F, z, 1.10F, 1.10F, len, d0), PartPose.ZERO);
         }
 
-        SquareSail.addMapped(artemon, "sail_artemon", artSparH, 0.95F, artSailH, artHalfH, artHalfF, 1.05F, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0);
+        SquareSail.addMapped(artemon, "sail_artemon", artSparH, 0.55F, artSailH, artHalfH, artHalfF, 1.05F, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0, false);
 
         final float stemPeakX = stemX - 0.4F;
         final float stemPeakY = deckY + 9.3F;
@@ -247,20 +258,19 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
 
         addTower(body, "tower_aft", -18.0F, deckY + 0.45F, d0);
 
+        final float shieldY = deckY + 0.10F;
+        final float shieldZ = hb + 0.34F;
         for (int i = 0; i < SHIELD_COUNT; i++) {
-            float x = -32.0F + i * 5.0F;
-            if (x > 34.0F) {
-                break;
-            }
-            body.addOrReplaceChild("sh_p" + i, CubeListBuilder.create().texOffs(IRON, IRON_V).addBox(x - 0.55F, deckY + 0.15F, -hb - 0.55F, 1.1F, 1.1F, 0.45F, d0), PartPose.ZERO);
-            body.addOrReplaceChild("sh_s" + i, CubeListBuilder.create().texOffs(IRON, IRON_V).addBox(x - 0.55F, deckY + 0.15F, hb + 0.10F, 1.1F, 1.1F, 0.45F, d0), PartPose.ZERO);
+            float x = SHIELD_X0 + i * OAR_PITCH;
+            RomanOvalShield.add(body, "sh_p" + i, x, shieldY, -shieldZ, -1, RED, RED_V, BRONZE, BRONZE_V, d0);
+            RomanOvalShield.add(body, "sh_s" + i, x, shieldY, shieldZ, +1, RED, RED_V, BRONZE, BRONZE_V, d0);
         }
 
-        final float mastBaseY = deckY + 0.35F;
+        final float mastBaseY = MAST_BASE_Y;
         final float mastH = 26.0F;
-        final float yardY = 23.0F;
-        final float sailH = 17.5F;
-        final float sailHalf = 14.0F;
+        final float yardY = YARD_Y;
+        final float sailH = SAIL_HEIGHT;
+        final float sailHalf = SAIL_HALF_HEAD;
 
         PartDefinition mast = body.addOrReplaceChild("mast", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-1.05F, 0.0F, -1.05F, 2.1F, mastH, 2.1F, d0), PartPose.offset(0.0F, mastBaseY, 0.0F));
         mast.addOrReplaceChild("truck", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.85F, mastH - 0.3F, -0.85F, 1.7F, 1.5F, 1.7F, d0), PartPose.ZERO);
@@ -274,20 +284,18 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
             yard.addOrReplaceChild("ys" + (yi++), CubeListBuilder.create().texOffs(RED, RED_V).addBox(-0.65F, -0.65F, z, 1.3F, 1.3F, len, d0), PartPose.ZERO);
         }
 
-        SquareSail.addMapped(mast, "sail_fixed", yardY, 1.10F, sailH, sailHalf, sailHalf - 1.0F, 1.0F, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0);
+        SquareSail.addMapped(mast, "sail_fixed", yardY, SAIL_X_OFF, sailH, sailHalf, SAIL_HALF_FOOT, SAIL_THICK, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0, true);
 
         final float truckAbsY = mastBaseY + mastH + 0.4F;
         addLineBetween(body, "stay_bow", stemPeakX, stemPeakY, 0.0F, 0.9F, truckAbsY, 0.0F);
         addLineBetween(body, "stay_stern", -52.0F, 14.5F, 0.0F, -0.9F, truckAbsY, 0.0F);
 
-        final float oarX0 = -32.0F;
-        final float oarPitch = 4.0F;
         final float oarY = redY + 0.55F;
         final float oarZ = hb + 0.20F;
         final float oarLen = 11.5F;
 
         for (int i = 0; i < OAR_PAIRS; i++) {
-            float x = oarX0 + i * oarPitch;
+            float x = OAR_X0 + i * OAR_PITCH;
             ShipOars.addOar(body, "oar_p" + i, x, oarY, -oarZ, true, oarLen, OAR, OAR_V, d0);
             ShipOars.addOar(body, "oar_s" + i, x, oarY, oarZ, false, oarLen, OAR, OAR_V, d0);
         }

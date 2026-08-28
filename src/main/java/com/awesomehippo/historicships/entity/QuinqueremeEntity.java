@@ -1,6 +1,7 @@
 package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.network.SailPaintPacket;
 
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,7 +23,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +45,10 @@ public class QuinqueremeEntity extends OarShipEntity {
 
     private static final EntityDataAccessor<Integer> DATA_TOWER_UNTIL = SynchedEntityData.defineId(QuinqueremeEntity.class, EntityDataSerializers.INT);
 
+    @Nullable
+    private byte[] sailPaint;
+    private int sailPaintVersion;
+
     private static final float[][] CARGO_XZ = {
         {6.0F, 0.0F},
         {-2.0F, -2.2F},
@@ -48,9 +56,20 @@ public class QuinqueremeEntity extends OarShipEntity {
         {-14.0F, 0.0F},
     };
 
+    private static final float RAM_X0 = 56.2F;
+    private static final ShipHull HULL = ShipHull.ofModel(U,
+            -54.5F, 2.90F,
+            -51.0F, 4.50F,
+            -42.0F, 5.22F,
+            40.0F, 5.22F,
+            47.3F, 3.70F,
+            53.2F, 2.25F,
+            RAM_X0, 1.20F,
+            66.8F, 0.55F);
+
     private static final OarShipStats STATS = new OarShipStats(
             MODEL_SCALE,
-            5.2F, 0.06F, 40.0F, 5.8F, 0.20F, 74.0F, 22.0F, 56.0F,
+            5.22F, 0.04F, 40.0F, 5.85F, 0.12F, 74.0F, 22.0F, 56.0F,
             MAX_PASSENGERS,
             new float[][] {{22.0F, 0.0F}, {10.0F, -2.4F}, {10.0F, 2.4F}, {-2.0F, -2.4F}, {-2.0F, 2.4F}, {-20.0F, 0.0F}},
             0.26F, 5.2F,
@@ -92,8 +111,76 @@ public class QuinqueremeEntity extends OarShipEntity {
     }
 
     @Override
+    protected ShipHull hullShape() {
+        return HULL;
+    }
+
+    @Override
+    protected float ramAlongMin() {
+        return RAM_X0 * U;
+    }
+
+    @Override
+    protected float ramDamage() {
+        return 12.0F;
+    }
+
+    @Nullable
+    public byte[] getSailPaint() {
+        return this.sailPaint;
+    }
+
+    public int getSailPaintVersion() {
+        return this.sailPaintVersion;
+    }
+
+    public void setSailPaintData(@Nullable byte[] pixels) {
+        this.sailPaint = pixels;
+        this.sailPaintVersion++;
+    }
+
+    public boolean canEditSail(Player player) {
+        if (this.isRemoved() || this.isSinking() || !this.isOwner(player)) {
+            return false;
+        }
+        double reach = this.halfLoa() + 8.0D;
+        return player.distanceToSqr(this) <= reach * reach;
+    }
+
+    public void applySailPaint(byte[] pixels) {
+        byte[] stored = pixels.length == 0 ? null : pixels.clone();
+        this.setSailPaintData(stored);
+        PacketDistributor.sendToPlayersTrackingEntity(this, new SailPaintPacket(this.getId(), stored == null ? new byte[0] : stored));
+        this.level().playSound(null, this.getX(), this.getY() + 2.0, this.getZ(), SoundEvents.DYE_USE, SoundSource.NEUTRAL, 1.0F, 1.0F);
+    }
+
+    @Override
+    protected void writeDropStack(ItemStack stack) {
+        if (this.sailPaint != null) {
+            stack.set(NapoleonShipMod.SHIP_SAIL_PAINT.get(), new SailPaint.Data(this.sailPaint));
+        }
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.sailPaint = SailPaint.fromInts(input.getIntArray("SailPaint").orElse(null));
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        if (this.sailPaint != null) {
+            output.putIntArray("SailPaint", SailPaint.toInts(this.sailPaint));
+        }
+    }
+
+    @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
         ItemStack stack = player.getItemInHand(hand);
+        if (stack.is(NapoleonShipMod.SAIL_BRUSH.get()) && this.canEditSail(player)) {
+            return InteractionResult.SUCCESS;
+        }
         if (stack.is(Items.LEAD)) {
             if (player.isSecondaryUseActive()) {
                 if (ShipAnimalCargo.tryUnloadAnimals(player, this)) {

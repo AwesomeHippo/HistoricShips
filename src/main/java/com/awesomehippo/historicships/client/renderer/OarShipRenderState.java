@@ -2,9 +2,13 @@ package com.awesomehippo.historicships.client.renderer;
 
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 import com.awesomehippo.historicships.entity.OarShipEntity;
+import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.resources.Identifier;
+
+import org.jetbrains.annotations.Nullable;
 
 public class OarShipRenderState extends EntityRenderState {
     public float yRot;
@@ -17,6 +21,8 @@ public class OarShipRenderState extends EntityRenderState {
     public int damageStage;
     public float sinkProgress;
     public float sinkRollDir;
+    @Nullable
+    public Identifier sailPaint;
 
     public void extractFrom(OarShipEntity entity, float partialTicks) {
         this.yRot = entity.getYRot(partialTicks);
@@ -33,6 +39,11 @@ public class OarShipRenderState extends EntityRenderState {
             this.sailStripe = drakkar.getSailStripe().id();
         } else {
             this.sailStripe = 0;
+        }
+        if (entity instanceof QuinqueremeEntity quinquereme) {
+            this.sailPaint = SailPaintTextures.get(quinquereme);
+        } else {
+            this.sailPaint = null;
         }
     }
 }

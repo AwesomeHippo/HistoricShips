@@ -31,8 +31,13 @@ public enum DrakkarSailStripe {
         return this.id;
     }
 
-    public Identifier texture() {
-        return this.pristine;
+    public DyeColor dye() {
+        return switch (this) {
+            case RED -> DyeColor.RED;
+            case BLUE -> DyeColor.BLUE;
+            case GREEN -> DyeColor.GREEN;
+            case PURPLE -> DyeColor.PURPLE;
+        };
     }
 
     public Identifier texture(int damageStage) {

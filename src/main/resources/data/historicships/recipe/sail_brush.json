@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "#minecraft:wool",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "W",
+    "S",
+    "S"
+  ],
+  "result": {
+    "id": "historicships:sail_brush"
+  }
+}

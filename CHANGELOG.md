@@ -1,5 +1,16 @@
 # Changelog
 
+### Version 26.1.2 - 1.2.0 (NeoForge) 2026-08-28
+- Now possible to repair ships by 15% with 30 planks (can be done inside/outside)
+- Fixed cargo to drop all the contained items when a ship sinks and when you pick it
+- Ships now actually collide with each other & drastically improved ship collision boxes overall
+- Drakkar sail color is now kept on pickup & the item icon now match the set color
+- Actually improved the Quinquereme side shields design. (replaced the old mini stone points lol)
+- Quinquereme main sail is now paintable with the new Sail Brush! (with 2 presets available: SQPR and Roman eagle)
+- Improved the Quinquereme ram (longer, golden color..) + it now deals damage on other ships imapct!
+- Raised the Quinquereme front sail
+- Small updates & Update translations
+
 ### Version 26.1.2 - 1.1.0 (NeoForge) 2026-08-17
 - Ships now have hull health: cannonballs, stones, explosions and axes damage it, (the texture gets mor broken as it drops)
 - New Ship sinking animation when the hull is at 0

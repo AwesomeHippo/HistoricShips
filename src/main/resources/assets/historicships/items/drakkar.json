@@ -1,6 +1,34 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "historicships:item/drakkar"
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "historicships:sail_stripe",
+    "cases": [
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "historicships:item/drakkar_blue"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "historicships:item/drakkar_green"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "historicships:item/drakkar_purple"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "historicships:item/drakkar"
+    }
   }
 }

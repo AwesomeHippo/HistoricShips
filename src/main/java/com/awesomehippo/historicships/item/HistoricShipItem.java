@@ -33,6 +33,8 @@ public abstract class HistoricShipItem extends Item {
 
     public abstract boolean isEnabled();
 
+    protected void applyPlaceData(ItemStack stack, Entity boat) {}
+
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!this.isEnabled()) {
@@ -70,9 +72,10 @@ public abstract class HistoricShipItem extends Item {
                     ship.setOwner(player);
                     Integer hull = stack.get(NapoleonShipMod.SHIP_HULL.get());
                     if (hull != null) {
-                        ship.setHull(hull);
+                        ship.setHullPercent(hull);
                     }
                 }
+                this.applyPlaceData(stack, boat);
                 level.addFreshEntity(boat);
                 level.gameEvent(player, GameEvent.ENTITY_PLACE, hit.getLocation());
                 stack.consume(1, player);
