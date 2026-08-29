@@ -1,0 +1,66 @@
+{
+  "criteria": {
+    "drakkar": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:drakkar"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "napoleon_ship": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:napoleon_ship"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "quinquereme": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:quinquereme"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "workbench": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:shipwright_workbench"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "historicships:block/shipwright_wood",
+    "description": {
+      "translate": "advancements.historicships.root.description"
+    },
+    "icon": {
+      "id": "historicships:shipwright_workbench"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancements.historicships.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "workbench",
+      "drakkar",
+      "quinquereme",
+      "napoleon_ship"
+    ]
+  ]
+}

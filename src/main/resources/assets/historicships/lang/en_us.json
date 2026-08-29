@@ -63,5 +63,17 @@
   "gui.historicships.hud.weapon_ready": "%s ready",
   "gui.historicships.hud.weapon_wait": "%s (%ss)",
   "gui.historicships.hud.engine_value": "%s %s",
-  "gui.historicships.hud.speed_mode": "%s (%s)"
+  "gui.historicships.hud.speed_mode": "%s (%s)",
+  "advancements.historicships.root.title": "Historic Ships",
+  "advancements.historicships.root.description": "Get a Shipwright Workbench",
+  "advancements.historicships.get_drakkar.title": "Drakkar",
+  "advancements.historicships.get_drakkar.description": "Assemble a Drakkar",
+  "advancements.historicships.get_quinquereme.title": "Quinquereme",
+  "advancements.historicships.get_quinquereme.description": "Assemble a Quinquereme",
+  "advancements.historicships.get_napoleon_ship.title": "Napoleon Ship",
+  "advancements.historicships.get_napoleon_ship.description": "Assemble a Napoleon Ship",
+  "advancements.historicships.ride_ship.title": "On board",
+  "advancements.historicships.ride_ship.description": "Get on a ship",
+  "advancements.historicships.full_fleet.title": "Full fleet",
+  "advancements.historicships.full_fleet.description": "Get a Drakkar, a Quinquereme and a Napoleon Ship"
 }

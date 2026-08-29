@@ -8,7 +8,6 @@ import com.awesomehippo.historicships.client.model.QuinqueremePaintModel;
 import com.awesomehippo.historicships.client.renderer.DrakkarRenderer;
 import com.awesomehippo.historicships.client.renderer.NapoleonShipRenderer;
 import com.awesomehippo.historicships.client.renderer.QuinqueremeRenderer;
-import com.awesomehippo.historicships.client.renderer.SailPaintRenderType;
 import com.awesomehippo.historicships.client.renderer.SailPaintTextures;
 import com.awesomehippo.historicships.client.screen.NapoleonEngineScreen;
 import com.awesomehippo.historicships.client.screen.SailPaintScreen;
@@ -44,7 +43,6 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
@@ -85,7 +83,6 @@ public class NapoleonShipClient {
         modBus.addListener(this::registerLayers);
         modBus.addListener(this::registerRenderers);
         modBus.addListener(this::registerScreens);
-        modBus.addListener(this::registerPipelines);
         modBus.addListener(NapoleonShipKeys::register);
 
         RamHitPacket.clientSend = packet -> ClientPacketDistributor.sendToServer(packet);
@@ -136,10 +133,6 @@ public class NapoleonShipClient {
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(NapoleonShipMod.SHIPWRIGHT_MENU.get(), ShipwrightScreen::new);
         event.register(NapoleonShipMod.ENGINE_MENU.get(), NapoleonEngineScreen::new);
-    }
-
-    private void registerPipelines(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(SailPaintRenderType.PIPELINE);
     }
 
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {

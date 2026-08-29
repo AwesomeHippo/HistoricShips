@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -38,7 +39,7 @@ public class QuinqueremeRenderer extends EntityRenderer<QuinqueremeEntity, OarSh
         Identifier texture = ShipDamageTextures.stage("quinquereme", state.damageStage);
         submitNodeCollector.submitModel(this.model, state, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         if (state.sailPaint != null) {
-            submitNodeCollector.submitCustomGeometry(poseStack, SailPaintRenderType.of(state.sailPaint), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(state.sailPaint), (pose, buffer) -> {
                 this.paintModel.setupAnim(state);
                 SailPaintMesh.emit(pose, buffer, this.paintModel, state.lightCoords);
             });

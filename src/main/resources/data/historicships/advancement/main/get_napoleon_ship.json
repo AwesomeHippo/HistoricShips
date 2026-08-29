@@ -1,0 +1,31 @@
+{
+  "parent": "historicships:main/root",
+  "criteria": {
+    "napoleon_ship": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:napoleon_ship"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.historicships.get_napoleon_ship.description"
+    },
+    "icon": {
+      "id": "historicships:napoleon_ship"
+    },
+    "title": {
+      "translate": "advancements.historicships.get_napoleon_ship.title"
+    }
+  },
+  "requirements": [
+    [
+      "napoleon_ship"
+    ]
+  ]
+}

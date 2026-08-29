@@ -6,6 +6,8 @@ import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -15,6 +17,8 @@ public class NapoleonEngineScreen extends AbstractContainerScreen<NapoleonEngine
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(NapoleonShipMod.MODID, "textures/gui/napoleon_engine.png");
     private static final Identifier LIT_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
     private static final Identifier ARROW_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
+    private static final Identifier WATER_STILL = Identifier.withDefaultNamespace("block/water_still");
+    private static final int WATER_COLOR = 0xFF3F76E4;
 
     public NapoleonEngineScreen(NapoleonEngineMenu menu, Inventory inv, Component title) {
         super(menu, inv, title, NapoleonEngineMenu.GUI_WIDTH, NapoleonEngineMenu.GUI_HEIGHT);
@@ -39,8 +43,17 @@ public class NapoleonEngineScreen extends AbstractContainerScreen<NapoleonEngine
 
         int waterH = Mth.clamp(Mth.ceil(53.0F * this.menu.getWater() / this.menu.getMaxWater()), 0, 53);
         if (waterH > 0) {
-            graphics.fill(x + 115, y + 70 - waterH, x + 131, y + 70, 0xFF3F76E4);
+            this.drawWater(graphics, x + 115, y + 70 - waterH, waterH);
         }
+    }
+
+    private void drawWater(GuiGraphicsExtractor graphics, int x, int y, int height) {
+        TextureAtlasSprite sprite = this.minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(WATER_STILL);
+        graphics.enableScissor(x, y, x + 16, y + height);
+        for (int ty = y + height - 16; ty > y - 16; ty -= 16) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, ty, 16, 16, WATER_COLOR);
+        }
+        graphics.disableScissor();
     }
 
     @Override

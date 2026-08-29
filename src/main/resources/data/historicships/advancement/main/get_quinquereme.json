@@ -1,0 +1,31 @@
+{
+  "parent": "historicships:main/root",
+  "criteria": {
+    "quinquereme": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:quinquereme"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.historicships.get_quinquereme.description"
+    },
+    "icon": {
+      "id": "historicships:quinquereme"
+    },
+    "title": {
+      "translate": "advancements.historicships.get_quinquereme.title"
+    }
+  },
+  "requirements": [
+    [
+      "quinquereme"
+    ]
+  ]
+}

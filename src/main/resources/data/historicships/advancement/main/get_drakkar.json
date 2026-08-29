@@ -1,0 +1,31 @@
+{
+  "parent": "historicships:main/root",
+  "criteria": {
+    "drakkar": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:drakkar"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.historicships.get_drakkar.description"
+    },
+    "icon": {
+      "id": "historicships:drakkar"
+    },
+    "title": {
+      "translate": "advancements.historicships.get_drakkar.title"
+    }
+  },
+  "requirements": [
+    [
+      "drakkar"
+    ]
+  ]
+}

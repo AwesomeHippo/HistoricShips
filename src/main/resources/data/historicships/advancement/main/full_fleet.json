@@ -1,0 +1,61 @@
+{
+  "parent": "historicships:main/get_napoleon_ship",
+  "criteria": {
+    "drakkar": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:drakkar"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "napoleon_ship": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:napoleon_ship"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "quinquereme": {
+      "conditions": {
+        "items": [
+          {
+            "items": "historicships:quinquereme"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.historicships.full_fleet.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "historicships:napoleon_ship",
+      "components": {
+        "minecraft:item_model": "historicships:logo32"
+      }
+    },
+    "title": {
+      "translate": "advancements.historicships.full_fleet.title"
+    }
+  },
+  "requirements": [
+    [
+      "drakkar"
+    ],
+    [
+      "quinquereme"
+    ],
+    [
+      "napoleon_ship"
+    ]
+  ]
+}

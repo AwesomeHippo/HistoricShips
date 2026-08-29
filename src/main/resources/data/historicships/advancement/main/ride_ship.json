@@ -1,0 +1,71 @@
+{
+  "parent": "historicships:main/get_napoleon_ship",
+  "criteria": {
+    "drakkar": {
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "vehicle": {
+                "type": "historicships:drakkar"
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:started_riding"
+    },
+    "napoleon_ship": {
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "vehicle": {
+                "type": "historicships:napoleon_ship"
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:started_riding"
+    },
+    "quinquereme": {
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "vehicle": {
+                "type": "historicships:quinquereme"
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:started_riding"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.historicships.ride_ship.description"
+    },
+    "icon": {
+      "id": "historicships:drakkar"
+    },
+    "title": {
+      "translate": "advancements.historicships.ride_ship.title"
+    }
+  },
+  "requirements": [
+    [
+      "drakkar",
+      "quinquereme",
+      "napoleon_ship"
+    ]
+  ]
+}
