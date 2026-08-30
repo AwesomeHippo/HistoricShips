@@ -12,7 +12,7 @@ public final class HistoricShipsKeys {
     public static final KeyMapping FIRE_LEFT = new KeyMapping("key.historicships.fire_left", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 78, CATEGORY);
     public static final KeyMapping FIRE_RIGHT = new KeyMapping("key.historicships.fire_right", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 66, CATEGORY);
     public static final KeyMapping TOGGLE_SAILS = new KeyMapping("key.historicships.toggle_sails", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 70, CATEGORY);
-    public static final KeyMapping LOOK_AROUND = new KeyMapping("key.historicships.look_around", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 342, CATEGORY);
+    public static final KeyMapping LOOK_AROUND = new KeyMapping("key.historicships.look_around", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 88, CATEGORY);
 
     public static void register(RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
