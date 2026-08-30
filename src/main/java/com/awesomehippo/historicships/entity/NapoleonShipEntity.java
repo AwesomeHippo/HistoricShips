@@ -93,15 +93,15 @@ public class NapoleonShipEntity extends StoredShipEntity {
     private float sailDeploy = 1.0F;
     private int sailToggleCooldown;
     private static final int SAIL_TOGGLE_COOLDOWN_TICKS = 40;
-    private static final float CRUISE_SAILS = 0.55F;
-    private static final float CRUISE_FURLED = 0.40F;
-    private static final float BOOST_SAILS = 1.75F;
-    private static final float BOOST_FURLED = 1.05F;
+    private static final float CRUISE_SAILS = 0.40F;
+    private static final float CRUISE_FURLED = 0.28F;
+    private static final float BOOST_SAILS = 1.30F;
+    private static final float BOOST_FURLED = 0.80F;
     private static final float LAND_SPEED = 0.08F;
     private static final float THRUST_BLEND = 0.22F;
     private static final float THRUST_BLEND_BOOST = 0.48F;
     private float smoothedMaxSpeed = CRUISE_SAILS;
-    private static final float TURN_RATE = 2.55F;
+    private static final float TURN_RATE = 2.15F;
     private static final float STEER_SMOOTH = 0.40F;
     private static final float BOW_SHELL_SPEED = 4.65F;
 
