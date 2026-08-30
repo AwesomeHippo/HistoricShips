@@ -291,7 +291,8 @@ public class QuinqueremeEntity extends OarShipEntity {
             server.addFreshEntity(stone);
         }
 
-        server.playSound(null, mx, my, mz, SoundEvents.PISTON_EXTEND, SoundSource.NEUTRAL, 0.85F, 0.7F + this.random.nextFloat() * 0.1F);
+        server.playSound(null, mx, my, mz, SoundEvents.STONE_BREAK, SoundSource.NEUTRAL, 1.15F, 0.7F + this.random.nextFloat() * 0.15F);
+        server.playSound(null, mx, my, mz, SoundEvents.STONE_HIT, SoundSource.NEUTRAL, 0.95F, 0.85F + this.random.nextFloat() * 0.15F);
         server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + bowX * 0.4, my, mz + bowZ * 0.4, 16, 0.25, 0.15, 0.25, 0.06);
         server.sendParticles(ParticleTypes.CLOUD, mx + bowX * 0.3, my, mz + bowZ * 0.3, 8, 0.18, 0.10, 0.18, 0.04);
     }
