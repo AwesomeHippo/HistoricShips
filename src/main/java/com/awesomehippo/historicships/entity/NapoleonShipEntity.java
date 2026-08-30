@@ -103,7 +103,12 @@ public class NapoleonShipEntity extends StoredShipEntity {
     private float smoothedMaxSpeed = CRUISE_SAILS;
     private static final float TURN_RATE = 2.15F;
     private static final float STEER_SMOOTH = 0.40F;
-    private static final float BOW_SHELL_SPEED = 4.65F;
+    public static final float BOW_SHELL_SPEED = 4.65F;
+    public static final float BOW_AIM_MAX_UP = 20.0F;
+    public static final float BOW_AIM_MAX_DOWN = 10.0F;
+    public static final float BOW_AIM_MAX_YAW = 30.0F;
+    private static final double BOW_GUN_DIST = 60.5F * U + 2.6;
+    private static final double BOW_GUN_Y = 6.4F * U + 0.35;
 
     public static final int MAX_WATER = 4000;
     public static final int WATER_PER_BUCKET = 1000;
@@ -550,19 +555,19 @@ public class NapoleonShipEntity extends StoredShipEntity {
         double bowZ = -Mth.cos(yaw);
         double stbdX = -bowZ;
         double stbdZ = bowX;
-        double bowDist = 60.5F * U + 2.6;
-        double gunY = this.getY() + 6.4F * U + 0.35;
+        double bowDist = BOW_GUN_DIST;
+        double gunY = this.getY() + BOW_GUN_Y;
         double[] lateral = {-2.9F * U, 2.9F * U};
         Vec3 shipVel = this.getDeltaMovement();
 
         if (fireFront) {
+            Vec3 aim = this.gunAimDirection(shooter, BOW_AIM_MAX_YAW, BOW_AIM_MAX_UP, -BOW_AIM_MAX_DOWN);
             for (double lat : lateral) {
                 double ox = this.getX() + bowX * bowDist + stbdX * lat;
                 double oz = this.getZ() + bowZ * bowDist + stbdZ * lat;
                 CannonballEntity shell = new CannonballEntity(server, ox, gunY, oz, shooter, CannonballEntity.FRONT_EXPLOSION);
                 shell.setSourceShip(this);
-                double up = 0.06 + this.random.nextDouble() * 0.03;
-                shell.setDeltaMovement(bowX * BOW_SHELL_SPEED + shipVel.x * 0.85, up + shipVel.y * 0.15, bowZ * BOW_SHELL_SPEED + shipVel.z * 0.85);
+                shell.setDeltaMovement(aim.x * BOW_SHELL_SPEED + shipVel.x * 0.85, aim.y * BOW_SHELL_SPEED + shipVel.y * 0.15, aim.z * BOW_SHELL_SPEED + shipVel.z * 0.85);
                 server.addFreshEntity(shell);
             }
         }
@@ -587,6 +592,13 @@ public class NapoleonShipEntity extends StoredShipEntity {
 
         server.playSound(null, this.getX(), gunY, this.getZ(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.NEUTRAL, 1.15F, 0.72F + this.random.nextFloat() * 0.08F);
         this.serverGunSmoke(server, bowX, bowZ, stbdX, stbdZ, gunY, bowDist, lateral, mode);
+    }
+
+    public Vec3 gunPos() {
+        float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
+        double bowX = Mth.sin(yawRad);
+        double bowZ = -Mth.cos(yawRad);
+        return new Vec3(this.getX() + bowX * BOW_GUN_DIST, this.getY() + BOW_GUN_Y, this.getZ() + bowZ * BOW_GUN_DIST);
     }
 
     private void serverGunSmoke(ServerLevel server, double bowX, double bowZ, double stbdX, double stbdZ, double gunY, double bowDist, double[] lateral, int mode) {

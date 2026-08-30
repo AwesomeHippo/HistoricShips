@@ -368,6 +368,22 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         return this.getControllingPassenger() == passenger;
     }
 
+    public Vec3 gunAimDirection(@Nullable LivingEntity shooter, float maxYaw, float maxUp, float minUp) {
+        float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
+        float relYaw = 0.0F;
+        float pitch;
+        if (shooter instanceof Player player) {
+            relYaw = Mth.clamp(Mth.wrapDegrees(player.getYRot() + 180.0F - this.getYRot()), -maxYaw, maxYaw);
+            pitch = Mth.clamp(player.getXRot(), -maxUp, -minUp);
+        } else {
+            pitch = minUp > 0.0F ? -minUp : 0.0F;
+        }
+        float aimYaw = yawRad + relYaw * Mth.DEG_TO_RAD;
+        float pitchRad = pitch * Mth.DEG_TO_RAD;
+        double horiz = Mth.cos(pitchRad);
+        return new Vec3(Mth.sin(aimYaw) * horiz, -Mth.sin(pitchRad), -Mth.cos(aimYaw) * horiz);
+    }
+
     protected void syncShipPosition() {
         if (this.isClientAuthoritative()) {
             this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());

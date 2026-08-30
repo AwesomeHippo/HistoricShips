@@ -78,6 +78,7 @@ public class NapoleonShipClient {
     private int speedVehicleId = -1;
 
     private int lastSpeedLabelTick = -999;
+    private boolean frontHeld;
 
     public NapoleonShipClient(IEventBus modBus) {
         modBus.addListener(this::registerLayers);
@@ -87,6 +88,7 @@ public class NapoleonShipClient {
 
         RamHitPacket.clientSend = packet -> ClientPacketDistributor.sendToServer(packet);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
+        NeoForge.EVENT_BUS.addListener(BowTrajectoryPreview::render);
         NeoForge.EVENT_BUS.addListener(this::onRenderGui);
         NeoForge.EVENT_BUS.addListener(this::onComputeFov);
         NeoForge.EVENT_BUS.addListener(this::onItemTooltip);
@@ -154,6 +156,7 @@ public class NapoleonShipClient {
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.screen != null) {
+            this.frontHeld = false;
             return;
         }
         LocalPlayer player = mc.player;
@@ -162,9 +165,15 @@ public class NapoleonShipClient {
                 ClientPacketDistributor.sendToServer(new OpenEnginePacket(napoleon.getId()));
             }
             if (!napoleon.isConductor(player)) {
+                this.frontHeld = false;
                 return;
             }
-            if (NapoleonShipKeys.FIRE_FRONT.consumeClick()) {
+            boolean down = NapoleonShipKeys.FIRE_FRONT.isDown();
+            NapoleonShipKeys.FIRE_FRONT.consumeClick();
+            if (down) {
+                this.frontHeld = true;
+            } else if (this.frontHeld) {
+                this.frontHeld = false;
                 if (napoleon.tryFireAll()) {
                     ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.FRONT));
                 }
@@ -186,14 +195,22 @@ public class NapoleonShipClient {
         }
         if (player.getVehicle() instanceof QuinqueremeEntity quin) {
             if (!quin.isConductor(player)) {
+                this.frontHeld = false;
                 return;
             }
-            if (NapoleonShipKeys.FIRE_FRONT.consumeClick()) {
+            boolean down = NapoleonShipKeys.FIRE_FRONT.isDown();
+            NapoleonShipKeys.FIRE_FRONT.consumeClick();
+            if (down) {
+                this.frontHeld = true;
+            } else if (this.frontHeld) {
+                this.frontHeld = false;
                 if (quin.tryFireTower()) {
                     ClientPacketDistributor.sendToServer(new FireTowerStonePacket(quin.getId()));
                 }
             }
+            return;
         }
+        this.frontHeld = false;
     }
 
     private void onComputeFov(ViewportEvent.ComputeFov event) {

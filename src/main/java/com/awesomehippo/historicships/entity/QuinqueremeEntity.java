@@ -39,8 +39,11 @@ public class QuinqueremeEntity extends OarShipEntity {
     public static final int TOWER_COOLDOWN = 28;
     private static final float U = MODEL_SCALE / 16.0F;
     private static final float TOWER_MODEL_X = -18.0F;
-    private static final float TOWER_MUZZLE_Y = 13.6F;
-    private static final float STONE_SPEED = 1.55F;
+    private static final float TOWER_GUN_Y = 13.6F;
+    public static final float STONE_SPEED = 1.55F;
+    public static final float TOWER_AIM_MAX_UP = 28.0F;
+    public static final float TOWER_AIM_MIN_UP = 14.0F;
+    public static final float TOWER_AIM_MAX_YAW = 30.0F;
     private static final int VOLLEY = 3;
 
     private static final EntityDataAccessor<Integer> DATA_TOWER_UNTIL = SynchedEntityData.defineId(QuinqueremeEntity.class, EntityDataSerializers.INT);
@@ -267,13 +270,14 @@ public class QuinqueremeEntity extends OarShipEntity {
         double stbdZ = bowX;
 
         double mx = this.getX() + bowX * (TOWER_MODEL_X * U);
-        double my = this.getY() + TOWER_MUZZLE_Y * U;
+        double my = this.getY() + TOWER_GUN_Y * U;
         double mz = this.getZ() + bowZ * (TOWER_MODEL_X * U);
 
         mx += bowX * 0.95;
         mz += bowZ * 0.95;
 
         Vec3 shipVel = this.getDeltaMovement();
+        Vec3 aim = this.gunAimDirection(shooter, TOWER_AIM_MAX_YAW, TOWER_AIM_MAX_UP, TOWER_AIM_MIN_UP);
         for (int i = 0; i < VOLLEY; i++) {
             double lat = (i - 1) * 0.22;
             double ox = mx + stbdX * lat + (this.random.nextDouble() - 0.5) * 0.04;
@@ -283,11 +287,10 @@ public class QuinqueremeEntity extends OarShipEntity {
             StoneBulletEntity stone = new StoneBulletEntity(server, ox, oy, oz, shooter);
             stone.setSourceShip(this);
             double spreadYaw = (i - 1) * 0.018 + (this.random.nextDouble() - 0.5) * 0.012;
-            double dirX = bowX * Math.cos(spreadYaw) - bowZ * Math.sin(spreadYaw);
-            double dirZ = bowX * Math.sin(spreadYaw) + bowZ * Math.cos(spreadYaw);
-            double up = 0.78 + this.random.nextDouble() * 0.10;
+            double dirX = aim.x * Math.cos(spreadYaw) - aim.z * Math.sin(spreadYaw);
+            double dirZ = aim.x * Math.sin(spreadYaw) + aim.z * Math.cos(spreadYaw);
             double spd = STONE_SPEED * (0.90 + this.random.nextDouble() * 0.08);
-            stone.setDeltaMovement(dirX * spd + shipVel.x * 0.45, up + shipVel.y * 0.1, dirZ * spd + shipVel.z * 0.45);
+            stone.setDeltaMovement(dirX * spd + shipVel.x * 0.45, aim.y * spd + shipVel.y * 0.1, dirZ * spd + shipVel.z * 0.45);
             server.addFreshEntity(stone);
         }
 
@@ -295,5 +298,13 @@ public class QuinqueremeEntity extends OarShipEntity {
         server.playSound(null, mx, my, mz, SoundEvents.STONE_HIT, SoundSource.NEUTRAL, 0.95F, 0.85F + this.random.nextFloat() * 0.15F);
         server.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.STONE.defaultBlockState()), mx + bowX * 0.4, my, mz + bowZ * 0.4, 16, 0.25, 0.15, 0.25, 0.06);
         server.sendParticles(ParticleTypes.CLOUD, mx + bowX * 0.3, my, mz + bowZ * 0.3, 8, 0.18, 0.10, 0.18, 0.04);
+    }
+
+    public Vec3 gunPos() {
+        float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
+        double bowX = Mth.sin(yawRad);
+        double bowZ = -Mth.cos(yawRad);
+        double dist = TOWER_MODEL_X * U + 0.95;
+        return new Vec3(this.getX() + bowX * dist, this.getY() + TOWER_GUN_Y * U, this.getZ() + bowZ * dist);
     }
 }
