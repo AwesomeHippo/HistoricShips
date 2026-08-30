@@ -29,8 +29,6 @@ public abstract class HistoricShipItem extends Item {
 
     protected abstract Entity createShip(Level level, double x, double y, double z);
 
-    public abstract int getMaxHull();
-
     public abstract boolean isEnabled();
 
     protected void applyPlaceData(ItemStack stack, Entity boat) {}

@@ -17,11 +17,6 @@ public class NapoleonShipItem extends HistoricShipItem {
     }
 
     @Override
-    public int getMaxHull() {
-        return NapoleonShipEntity.MAX_HULL;
-    }
-
-    @Override
     public boolean isEnabled() {
         return ShipsConfig.NAPOLEON_SHIP.get();
     }

@@ -1,7 +1,7 @@
 package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.HistoricShips;
-import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
+import com.awesomehippo.historicships.menu.NapoleonShipMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 
 import net.minecraft.core.NonNullList;
@@ -119,7 +119,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     private static final EntityDataAccessor<Boolean> DATA_SAILS_FURLED = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_BOOSTING = SynchedEntityData.defineId(NapoleonShipEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private final SimpleContainer engineItems = new SimpleContainer(NapoleonEngineMenu.ENGINE_SLOTS) {
+    private final SimpleContainer engineItems = new SimpleContainer(NapoleonShipMenu.ENGINE_SLOTS) {
         @Override
         public boolean stillValid(Player player) {
             return NapoleonShipEntity.this.isAlive() && player.distanceToSqr(NapoleonShipEntity.this) < 4096.0D;
@@ -133,11 +133,11 @@ public class NapoleonShipEntity extends StoredShipEntity {
         @Override
         public int get(int index) {
             return switch (index) {
-                case NapoleonEngineMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel;
-                case NapoleonEngineMenu.DATA_MAX_WATER -> MAX_WATER;
-                case NapoleonEngineMenu.DATA_LIT -> NapoleonShipEntity.this.litTime;
-                case NapoleonEngineMenu.DATA_LIT_TOTAL -> Math.max(1, NapoleonShipEntity.this.litDuration);
-                case NapoleonEngineMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure;
+                case NapoleonShipMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel;
+                case NapoleonShipMenu.DATA_MAX_WATER -> MAX_WATER;
+                case NapoleonShipMenu.DATA_LIT -> NapoleonShipEntity.this.litTime;
+                case NapoleonShipMenu.DATA_LIT_TOTAL -> Math.max(1, NapoleonShipEntity.this.litDuration);
+                case NapoleonShipMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure;
                 default -> 0;
             };
         }
@@ -145,10 +145,10 @@ public class NapoleonShipEntity extends StoredShipEntity {
         @Override
         public void set(int index, int value) {
             switch (index) {
-                case NapoleonEngineMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel = value;
-                case NapoleonEngineMenu.DATA_LIT -> NapoleonShipEntity.this.litTime = value;
-                case NapoleonEngineMenu.DATA_LIT_TOTAL -> NapoleonShipEntity.this.litDuration = value;
-                case NapoleonEngineMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure = value;
+                case NapoleonShipMenu.DATA_WATER -> NapoleonShipEntity.this.waterLevel = value;
+                case NapoleonShipMenu.DATA_LIT -> NapoleonShipEntity.this.litTime = value;
+                case NapoleonShipMenu.DATA_LIT_TOTAL -> NapoleonShipEntity.this.litDuration = value;
+                case NapoleonShipMenu.DATA_PRESSURE -> NapoleonShipEntity.this.pressure = value;
                 default -> {
                 }
             }
@@ -156,7 +156,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
 
         @Override
         public int getCount() {
-            return NapoleonEngineMenu.DATA_COUNT;
+            return NapoleonShipMenu.DATA_COUNT;
         }
     };
 
@@ -677,21 +677,40 @@ public class NapoleonShipEntity extends StoredShipEntity {
         return this.getPressure() >= MIN_BOOST_PRESSURE && this.getWaterLevel() > 0;
     }
 
-    public void openEngineMenu(Player player) {
+    @Override
+    protected void openInventory(Player player) {
+        this.openShipMenu(player, NapoleonShipMenu.TAB_CARGO);
+    }
+
+    public void openShipMenu(Player player, int tab) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
+        int openTab = tab == NapoleonShipMenu.TAB_ENGINE ? NapoleonShipMenu.TAB_ENGINE : NapoleonShipMenu.TAB_CARGO;
         serverPlayer.openMenu(new MenuProvider() {
             @Override
             public Component getDisplayName() {
-                return Component.translatable("container.historicships.engine");
+                return NapoleonShipEntity.this.getName();
             }
 
             @Override
             public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
-                return new NapoleonEngineMenu(id, inv, NapoleonShipEntity.this);
+                return new NapoleonShipMenu(id, inv, NapoleonShipEntity.this, openTab);
             }
-        }, buf -> buf.writeVarInt(NapoleonShipEntity.this.getId()));
+
+            @Override
+            public boolean shouldTriggerClientSideContainerClosingOnOpen() {
+                return false;
+            }
+        }, buf -> {
+            buf.writeVarInt(NapoleonShipEntity.this.getId());
+            buf.writeVarInt(openTab);
+        });
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new NapoleonShipMenu(containerId, inventory, this);
     }
 
     private void syncEngineData() {
@@ -745,12 +764,12 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     private void tryAcceptWaterBucket() {
-        ItemStack stack = this.engineItems.getItem(NapoleonEngineMenu.WATER_SLOT);
+        ItemStack stack = this.engineItems.getItem(NapoleonShipMenu.WATER_SLOT);
         if (!stack.is(Items.WATER_BUCKET) || this.waterLevel >= MAX_WATER) {
             return;
         }
         this.waterLevel = Math.min(MAX_WATER, this.waterLevel + WATER_PER_BUCKET);
-        this.engineItems.setItem(NapoleonEngineMenu.WATER_SLOT, new ItemStack(Items.BUCKET));
+        this.engineItems.setItem(NapoleonShipMenu.WATER_SLOT, new ItemStack(Items.BUCKET));
         this.engineItems.setChanged();
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.6F, 1.0F);
     }
@@ -759,16 +778,16 @@ public class NapoleonShipEntity extends StoredShipEntity {
         if (this.waterLevel <= 0) {
             return;
         }
-        ItemStack fuel = this.engineItems.getItem(NapoleonEngineMenu.FUEL_SLOT);
+        ItemStack fuel = this.engineItems.getItem(NapoleonShipMenu.FUEL_SLOT);
         int burn = engineBurnTime(fuel);
         if (burn <= 0) {
             return;
         }
         fuel.shrink(1);
         if (fuel.isEmpty()) {
-            this.engineItems.setItem(NapoleonEngineMenu.FUEL_SLOT, ItemStack.EMPTY);
+            this.engineItems.setItem(NapoleonShipMenu.FUEL_SLOT, ItemStack.EMPTY);
         } else {
-            this.engineItems.setItem(NapoleonEngineMenu.FUEL_SLOT, fuel);
+            this.engineItems.setItem(NapoleonShipMenu.FUEL_SLOT, fuel);
         }
         this.litTime = burn;
         this.litDuration = burn;
@@ -787,7 +806,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonEngineMenu.ENGINE_SLOTS, ItemStack.EMPTY);
+        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonShipMenu.ENGINE_SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input.childOrEmpty("EngineItems"), items);
         for (int i = 0; i < items.size(); i++) {
             this.engineItems.setItem(i, items.get(i));
@@ -802,8 +821,8 @@ public class NapoleonShipEntity extends StoredShipEntity {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonEngineMenu.ENGINE_SLOTS, ItemStack.EMPTY);
-        for (int i = 0; i < NapoleonEngineMenu.ENGINE_SLOTS; i++) {
+        NonNullList<ItemStack> items = NonNullList.withSize(NapoleonShipMenu.ENGINE_SLOTS, ItemStack.EMPTY);
+        for (int i = 0; i < NapoleonShipMenu.ENGINE_SLOTS; i++) {
             items.set(i, this.engineItems.getItem(i));
         }
         ContainerHelper.saveAllItems(output.child("EngineItems"), items);

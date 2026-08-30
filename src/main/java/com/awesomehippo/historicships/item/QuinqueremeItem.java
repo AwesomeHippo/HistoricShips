@@ -20,11 +20,6 @@ public class QuinqueremeItem extends HistoricShipItem {
     }
 
     @Override
-    public int getMaxHull() {
-        return QuinqueremeEntity.MAX_HULL;
-    }
-
-    @Override
     public boolean isEnabled() {
         return ShipsConfig.QUINQUEREME.get();
     }

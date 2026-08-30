@@ -934,7 +934,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         if (this.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        player.openMenu(this);
+        this.openInventory(player);
         if (player.level() instanceof ServerLevel server) {
             this.gameEvent(GameEvent.CONTAINER_OPEN, player);
             PiglinAi.angerNearbyPiglins(server, player, true);
@@ -944,11 +944,15 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     @Override
     public void openCustomInventoryScreen(Player player) {
-        player.openMenu(this);
+        this.openInventory(player);
         if (player.level() instanceof ServerLevel server) {
             this.gameEvent(GameEvent.CONTAINER_OPEN, player);
             PiglinAi.angerNearbyPiglins(server, player, true);
         }
+    }
+
+    protected void openInventory(Player player) {
+        player.openMenu(this);
     }
 
     @Override

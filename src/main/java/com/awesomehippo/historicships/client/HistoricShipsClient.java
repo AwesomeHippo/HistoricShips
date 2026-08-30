@@ -9,7 +9,7 @@ import com.awesomehippo.historicships.client.renderer.DrakkarRenderer;
 import com.awesomehippo.historicships.client.renderer.NapoleonShipRenderer;
 import com.awesomehippo.historicships.client.renderer.QuinqueremeRenderer;
 import com.awesomehippo.historicships.client.renderer.SailPaintTextures;
-import com.awesomehippo.historicships.client.screen.NapoleonEngineScreen;
+import com.awesomehippo.historicships.client.screen.NapoleonShipScreen;
 import com.awesomehippo.historicships.client.screen.SailPaintScreen;
 import com.awesomehippo.historicships.client.screen.ShipwrightScreen;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
@@ -22,7 +22,6 @@ import com.awesomehippo.historicships.entity.StoredShipEntity;
 import com.awesomehippo.historicships.item.HistoricShipItem;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
-import com.awesomehippo.historicships.network.OpenEnginePacket;
 import com.awesomehippo.historicships.network.RamHitPacket;
 import com.awesomehippo.historicships.network.ToggleSailsPacket;
 
@@ -79,6 +78,7 @@ public class HistoricShipsClient {
 
     private int lastSpeedLabelTick = -999;
     private boolean frontHeld;
+    private int engineHintTick;
 
     public HistoricShipsClient(IEventBus modBus) {
         modBus.addListener(this::registerLayers);
@@ -88,6 +88,10 @@ public class HistoricShipsClient {
 
         RamHitPacket.clientSend = packet -> ClientPacketDistributor.sendToServer(packet);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
+        NeoForge.EVENT_BUS.addListener(ShipLook::tick);
+        NeoForge.EVENT_BUS.addListener(ShipLook::scroll);
+        NeoForge.EVENT_BUS.addListener(ShipLook::cameraFov);
+        NeoForge.EVENT_BUS.addListener(ShipLook::cameraDistance);
         NeoForge.EVENT_BUS.addListener(BowTrajectoryPreview::render);
         NeoForge.EVENT_BUS.addListener(this::onRenderGui);
         NeoForge.EVENT_BUS.addListener(this::onComputeFov);
@@ -134,7 +138,7 @@ public class HistoricShipsClient {
 
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(HistoricShips.SHIPWRIGHT_MENU.get(), ShipwrightScreen::new);
-        event.register(HistoricShips.ENGINE_MENU.get(), NapoleonEngineScreen::new);
+        event.register(HistoricShips.NAPOLEON_MENU.get(), NapoleonShipScreen::new);
     }
 
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -155,15 +159,19 @@ public class HistoricShipsClient {
 
     private void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.screen != null) {
+        if (mc.player == null || mc.level == null) {
             this.frontHeld = false;
             return;
         }
         LocalPlayer player = mc.player;
+        if (player.getVehicle() instanceof NapoleonShipEntity napoleon && napoleon.isConductor(player)) {
+            this.hintEngine(player, napoleon);
+        }
+        if (mc.screen != null) {
+            this.frontHeld = false;
+            return;
+        }
         if (player.getVehicle() instanceof NapoleonShipEntity napoleon) {
-            if (HistoricShipsKeys.OPEN_ENGINE.consumeClick()) {
-                ClientPacketDistributor.sendToServer(new OpenEnginePacket(napoleon.getId()));
-            }
             if (!napoleon.isConductor(player)) {
                 this.frontHeld = false;
                 return;
@@ -339,6 +347,7 @@ public class HistoricShipsClient {
             rows.add(new String[] {tr("gui.historicships.hud.animals"), animals + "/" + maxAnimals});
         }
         rows.add(new String[] {tr("gui.historicships.hud.cargo"), cargoKeys()});
+        rows.add(new String[] {tr("gui.historicships.hud.look"), keyName(HistoricShipsKeys.LOOK_AROUND)});
         drawPanel(g, font, sw, panelTitle(ship, title), rows.toArray(new String[0][]));
     }
 
@@ -353,7 +362,8 @@ public class HistoricShipsClient {
             {tr("gui.historicships.hud.crew"), ShipAnimalCargo.countPlayers(ship) + "/" + QuinqueremeEntity.MAX_PASSENGERS},
             {tr("gui.historicships.hud.animals"), ship.getAnimalCount() + "/" + QuinqueremeEntity.MAX_ANIMALS},
             {tr("gui.historicships.hud.tower"), tower},
-            {tr("gui.historicships.hud.cargo"), cargoKeys()}
+            {tr("gui.historicships.hud.cargo"), cargoKeys()},
+            {tr("gui.historicships.hud.look"), keyName(HistoricShipsKeys.LOOK_AROUND)}
         });
     }
 
@@ -363,7 +373,6 @@ public class HistoricShipsClient {
         String kRight = HistoricShipsKeys.FIRE_RIGHT.getTranslatedKeyMessage().getString();
         String kGuns = kFire + " / " + kLeft + " / " + kRight;
         String kSail = HistoricShipsKeys.TOGGLE_SAILS.getTranslatedKeyMessage().getString();
-        String kEngine = HistoricShipsKeys.OPEN_ENGINE.getTranslatedKeyMessage().getString();
 
         String guns = ship.getBroadsideCooldown() > 0
                 ? tr("gui.historicships.hud.weapon_wait", kGuns, ship.getBroadsideCooldown() / 20 + 1)
@@ -378,8 +387,8 @@ public class HistoricShipsClient {
             {tr("gui.historicships.hud.animals"), ship.getAnimalCount() + "/" + NapoleonShipEntity.MAX_ANIMALS},
             {tr("gui.historicships.hud.guns"), guns},
             {tr("gui.historicships.hud.sails"), sails},
-            {tr("gui.historicships.hud.engine"), tr("gui.historicships.hud.engine_value", kEngine, engineStatus(ship))},
-            {tr("gui.historicships.hud.cargo"), cargoKeys()}
+            {tr("gui.historicships.hud.cargo"), cargoKeys()},
+            {tr("gui.historicships.hud.look"), keyName(HistoricShipsKeys.LOOK_AROUND)}
         });
     }
 
@@ -387,14 +396,19 @@ public class HistoricShipsClient {
         return ship.getHullPercent() + "%";
     }
 
-    private static String engineStatus(NapoleonShipEntity ship) {
+    private void hintEngine(LocalPlayer player, NapoleonShipEntity ship) {
+        if (ship.canSteamBoost() || this.engineHintTick++ % 20 != 0) {
+            return;
+        }
         if (ship.getWaterLevel() <= 0) {
-            return tr("gui.historicships.hud.no_water");
+            player.sendOverlayMessage(Component.translatable("gui.historicships.hud.no_water"));
+            return;
         }
-        if (ship.canSteamBoost()) {
-            return tr("gui.historicships.hud.ready");
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options == null) {
+            return;
         }
-        return tr("gui.historicships.hud.need_coal");
+        player.sendOverlayMessage(Component.translatable("gui.historicships.hud.need_coal", keyName(mc.options.keyInventory)));
     }
 
     private static String panelTitle(StoredShipEntity ship, String title) {
@@ -429,6 +443,7 @@ public class HistoricShipsClient {
         if (maxAnimals > 0) {
             rows.add(new String[] {tr("gui.historicships.hud.animals"), animals + "/" + maxAnimals});
         }
+        rows.add(new String[] {tr("gui.historicships.hud.look"), keyName(HistoricShipsKeys.LOOK_AROUND)});
         drawPanel(g, font, sw, panelTitle(ship, tr("gui.historicships.hud.passenger")), rows.toArray(new String[0][]));
     }
 

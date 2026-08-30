@@ -20,11 +20,6 @@ public class DrakkarItem extends HistoricShipItem {
     }
 
     @Override
-    public int getMaxHull() {
-        return DrakkarEntity.MAX_HULL;
-    }
-
-    @Override
     public boolean isEnabled() {
         return ShipsConfig.DRAKKAR.get();
     }

@@ -12,11 +12,10 @@ import com.awesomehippo.historicships.entity.StoredShipEntity;
 import com.awesomehippo.historicships.item.DrakkarItem;
 import com.awesomehippo.historicships.item.NapoleonShipItem;
 import com.awesomehippo.historicships.item.QuinqueremeItem;
-import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
+import com.awesomehippo.historicships.menu.NapoleonShipMenu;
 import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
-import com.awesomehippo.historicships.network.OpenEnginePacket;
 import com.awesomehippo.historicships.network.RamHitPacket;
 import com.awesomehippo.historicships.network.SailPaintPacket;
 import com.awesomehippo.historicships.network.ToggleSailsPacket;
@@ -81,13 +80,15 @@ public class HistoricShips {
     public static final DeferredItem<BlockItem> SHIPWRIGHT_WORKBENCH_ITEM = ITEMS.registerSimpleBlockItem(SHIPWRIGHT_WORKBENCH);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShipwrightWorkbenchBlockEntity>> SHIPWRIGHT_WORKBENCH_BE = BLOCK_ENTITIES.register("shipwright_workbench", () -> new BlockEntityType<>(ShipwrightWorkbenchBlockEntity::new, SHIPWRIGHT_WORKBENCH.get()));
     public static final DeferredHolder<MenuType<?>, MenuType<ShipwrightMenu>> SHIPWRIGHT_MENU = MENUS.register("shipwright", () -> IMenuTypeExtension.create((id, inv, buf) -> new ShipwrightMenu(id, inv)));
-    public static final DeferredHolder<MenuType<?>, MenuType<NapoleonEngineMenu>> ENGINE_MENU = MENUS.register("engine", () -> IMenuTypeExtension.create((id, inv, buf) -> {
-        int shipId = buf.readVarInt();
-        Entity entity = inv.player.level().getEntity(shipId);
-        if (entity instanceof NapoleonShipEntity ship) {
-            return new NapoleonEngineMenu(id, inv, ship);
+    public static final DeferredHolder<MenuType<?>, MenuType<NapoleonShipMenu>> NAPOLEON_MENU = MENUS.register("napoleon_ship", () -> IMenuTypeExtension.create((id, inv, buf) -> {
+        if (buf.readableBytes() > 0) {
+            Entity entity = inv.player.level().getEntity(buf.readVarInt());
+            int tab = buf.readableBytes() > 0 ? buf.readVarInt() : NapoleonShipMenu.TAB_CARGO;
+            if (entity instanceof NapoleonShipEntity ship) {
+                return new NapoleonShipMenu(id, inv, ship, tab);
+            }
         }
-        return new NapoleonEngineMenu(id, inv);
+        return new NapoleonShipMenu(id, inv);
     }));
 
     public static final DeferredItem<NapoleonShipItem> NAPOLEON_SHIP_ITEM = ITEMS.registerItem("napoleon_ship", NapoleonShipItem::new, props -> props.stacksTo(1));
@@ -165,7 +166,6 @@ public class HistoricShips {
         var registrar = event.registrar("1");
         registrar.playToServer(FireBowShellPacket.TYPE, FireBowShellPacket.STREAM_CODEC, FireBowShellPacket::handle);
         registrar.playToServer(FireTowerStonePacket.TYPE, FireTowerStonePacket.STREAM_CODEC, FireTowerStonePacket::handle);
-        registrar.playToServer(OpenEnginePacket.TYPE, OpenEnginePacket.STREAM_CODEC, OpenEnginePacket::handle);
         registrar.playToServer(ToggleSailsPacket.TYPE, ToggleSailsPacket.STREAM_CODEC, ToggleSailsPacket::handle);
         registrar.playToServer(RamHitPacket.TYPE, RamHitPacket.STREAM_CODEC, RamHitPacket::handle);
         registrar.playBidirectional(SailPaintPacket.TYPE, SailPaintPacket.STREAM_CODEC, SailPaintPacket::handleServer, SailPaintPacket::handleClient);
