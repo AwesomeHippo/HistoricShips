@@ -40,7 +40,7 @@
     "icon": {
       "id": "historicships:napoleon_ship",
       "components": {
-        "minecraft:item_model": "historicships:logo32"
+        "minecraft:item_model": "historicships:logo64"
       }
     },
     "title": {

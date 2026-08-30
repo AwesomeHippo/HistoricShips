@@ -1,7 +1,7 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "historicships:item/logo32"
+    "model": "historicships:item/logo64"
   },
   "oversized_in_gui": true
 }

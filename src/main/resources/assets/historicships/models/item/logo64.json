@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "historicships:item/logo32"
+    "layer0": "historicships:item/logo64"
   }
 }
