@@ -73,7 +73,7 @@ public class QuinqueremeEntity extends OarShipEntity {
             MAX_PASSENGERS,
             new float[][] {{22.0F, 0.0F}, {10.0F, -2.4F}, {10.0F, 2.4F}, {-2.0F, -2.4F}, {-2.0F, 2.4F}, {-20.0F, 0.0F}},
             0.26F, 5.2F,
-            0.52F, 1.95F, 0.07F, 0.24F, 0.50F, 3.15F, 0.45F,
+            0.52F, 1.70F, 0.07F, 0.24F, 0.50F, 3.15F, 0.45F,
             0.38D, 0.16F, 0.09F, 0.045F,
             0.48D, 0.16F,
             0.022D, 0.00030D, 0.0026D, 0.988D,
