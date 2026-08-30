@@ -168,12 +168,12 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         addHullSeg(body, "hull_a0", AFT_X0, -28.5F, 0.0F, HULL_TOP, NARROW_Z, d0);
         addHullSeg(body, "hull_a1", -28.5F, AFT_X1, 0.0F, HULL_TOP, NARROW_Z, d0);
 
-        body.addOrReplaceChild("lock_mb_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(MID_X1 - 0.85F, 0.0F, -MID_Z - 0.12F, 1.7F, HULL_TOP, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("lock_mb_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(MID_X1 - 0.85F, 0.0F, NARROW_Z - 0.10F, 1.7F, HULL_TOP, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("lock_ma_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(AFT_X1 - 0.85F, 0.0F, -MID_Z - 0.12F, 1.7F, HULL_TOP, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("lock_ma_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(AFT_X1 - 0.85F, 0.0F, NARROW_Z - 0.10F, 1.7F, HULL_TOP, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("lock_bp_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(PROW_X0 - 0.85F, 0.0F, -NARROW_Z - 0.12F, 1.7F, HULL_TOP, NARROW_Z - PROW_Z + 0.28F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("lock_bp_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(PROW_X0 - 0.85F, 0.0F, PROW_Z - 0.16F, 1.7F, HULL_TOP, NARROW_Z - PROW_Z + 0.28F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_mb_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(MID_X1 - 0.85F, 0.05F, -MID_Z - 0.12F, 1.7F, HULL_TOP - 0.15F, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_mb_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(MID_X1 - 0.85F, 0.05F, NARROW_Z - 0.10F, 1.7F, HULL_TOP - 0.15F, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_ma_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(AFT_X1 - 0.85F, 0.05F, -MID_Z - 0.12F, 1.7F, HULL_TOP - 0.15F, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_ma_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(AFT_X1 - 0.85F, 0.05F, NARROW_Z - 0.10F, 1.7F, HULL_TOP - 0.15F, MID_Z - NARROW_Z + 0.22F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_bp_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(PROW_X0 - 0.85F, 0.05F, -NARROW_Z - 0.12F, 1.7F, HULL_TOP - 0.15F, NARROW_Z - PROW_Z + 0.28F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("lock_bp_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(PROW_X0 - 0.85F, 0.05F, PROW_Z - 0.16F, 1.7F, HULL_TOP - 0.15F, NARROW_Z - PROW_Z + 0.28F, d0), PartPose.ZERO);
 
         final float scarfH = HULL_TOP - 0.18F;
         addHullSeg(body, "scarf_m_a", -7.3F, -5.7F, 0.05F, scarfH - 0.05F, MID_Z - 0.05F, d0);
@@ -205,9 +205,9 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         addHullSeg(body, "under_b", BOW_X0 - 0.95F, BOW_X1 + 0.95F, underY, underH, deckNarZ - 0.05F, d0);
         addHullSeg(body, "under_a", AFT_X0 - 0.5F, AFT_X1 + 0.95F, underY, underH, deckNarZ - 0.05F, d0);
         addHullSeg(body, "under_p", PROW_X0 - 0.95F, PROW_X1 + 0.4F, underY, underH, deckProwZ - 0.05F, d0);
-        addHullSeg(body, "under_stern", STERN_X0 - 0.2F, AFT_X0 + 0.6F, underY, underH, deckNarZ - 0.15F, d0);
-        body.addOrReplaceChild("deck_stem", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(PROW_X1, DECK_Y, -(PROW_Z - 0.95F), 1.6F, DECK_H, (PROW_Z - 0.95F) * 2.0F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("deck_stem_mid", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(PROW_X1 + 1.6F, DECK_Y, -(PROW_Z - 1.55F), 1.5F, DECK_H, (PROW_Z - 1.55F) * 2.0F, d0), PartPose.ZERO);
+        addHullSeg(body, "under_stern", STERN_X0 + 0.25F, AFT_X0 + 0.6F, underY, underH, deckNarZ - 0.15F, d0);
+        body.addOrReplaceChild("deck_stem", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(PROW_X1, DECK_Y, -(PROW_Z - 0.95F), 1.65F, DECK_H, (PROW_Z - 0.95F) * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("deck_stem_mid", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(PROW_X1 + 1.6F, DECK_Y, -(PROW_Z - 1.55F), 1.55F, DECK_H, (PROW_Z - 1.55F) * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("deck_nose", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(PROW_X1 + 3.1F, DECK_Y, -(PROW_Z - 2.15F), 1.35F, DECK_H, (PROW_Z - 2.15F) * 2.0F, d0), PartPose.ZERO);
 
         addDeckSeg(body, "deck_a", AFT_X0, AFT_X1, DECK_Y, DECK_H, deckNarZ, d0);
@@ -219,11 +219,11 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         body.addOrReplaceChild("rail_m_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(MID_X0, RAIL_Y, midRailOuter - RAIL_T, MID_X1 - MID_X0, RAIL_H, RAIL_T, d0), PartPose.ZERO);
         body.addOrReplaceChild("rail_b_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(BOW_X0, RAIL_Y, -narRailOuter, BOW_X1 - BOW_X0, RAIL_H, RAIL_T, d0), PartPose.ZERO);
         body.addOrReplaceChild("rail_b_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(BOW_X0, RAIL_Y, narRailOuter - RAIL_T, BOW_X1 - BOW_X0, RAIL_H, RAIL_T, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_a_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X0, RAIL_Y, -narRailOuter, AFT_X1 - AFT_X0, RAIL_H, RAIL_T, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_a_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X0, RAIL_Y, narRailOuter - RAIL_T, AFT_X1 - AFT_X0, RAIL_H, RAIL_T, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_a_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X0 + 3.0F, RAIL_Y, -narRailOuter, AFT_X1 - AFT_X0 - 3.0F, RAIL_H, RAIL_T, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_a_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X0 + 3.0F, RAIL_Y, narRailOuter - RAIL_T, AFT_X1 - AFT_X0 - 3.0F, RAIL_H, RAIL_T, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("rail_pr_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0, RAIL_Y, -prowRailOuter, PROW_X1 - PROW_X0 + 0.4F, RAIL_H, 0.85F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_pr_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0, RAIL_Y, prowRailOuter - 0.85F, PROW_X1 - PROW_X0 + 0.4F, RAIL_H, 0.85F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_pr_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0, RAIL_Y, -prowRailOuter, PROW_X1 - PROW_X0 + 0.05F, RAIL_H, 0.85F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_pr_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0, RAIL_Y, prowRailOuter - 0.85F, PROW_X1 - PROW_X0 + 0.05F, RAIL_H, 0.85F, d0), PartPose.ZERO);
 
         final float headX = PROW_X1 + 0.05F;
         final float deckTopY = DECK_Y + DECK_H;
@@ -232,18 +232,23 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         body.addOrReplaceChild("fore_stem_cap", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(headX + 0.05F, RAIL_TOP - 0.40F, -1.6F, 1.10F, 0.50F, 3.2F, d0), PartPose.ZERO);
         body.addOrReplaceChild("rail_head", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(headX + 0.10F, RAIL_Y + 0.08F, -prowRailOuter + 0.08F, 0.90F, RAIL_H - 0.14F, prowRailOuter * 2.0F - 0.16F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("rail_scarf_mb_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(MID_X1 - 0.5F, RAIL_Y + 0.05F, -midRailOuter - 0.08F, 1.0F, RAIL_H - 0.05F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_scarf_mb_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(MID_X1 - 0.5F, RAIL_Y + 0.05F, narRailOuter - 0.12F, 1.0F, RAIL_H - 0.05F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_scarf_ma_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X1 - 0.5F, RAIL_Y + 0.05F, -midRailOuter - 0.08F, 1.0F, RAIL_H - 0.05F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_scarf_ma_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X1 - 0.5F, RAIL_Y + 0.05F, narRailOuter - 0.12F, 1.0F, RAIL_H - 0.05F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_scarf_bp_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0 - 0.2F, RAIL_Y + 0.05F, -narRailOuter - 0.08F, 1.0F, RAIL_H - 0.05F, narRailOuter - prowRailOuter + 0.20F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("rail_scarf_bp_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0 - 0.2F, RAIL_Y + 0.05F, prowRailOuter - 0.12F, 1.0F, RAIL_H - 0.05F, narRailOuter - prowRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_mb_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(MID_X1 - 0.5F, RAIL_Y + 0.05F, -midRailOuter - 0.08F, 1.0F, RAIL_H - 0.10F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_mb_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(MID_X1 - 0.5F, RAIL_Y + 0.05F, narRailOuter - 0.12F, 1.0F, RAIL_H - 0.10F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_ma_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X1 - 0.5F, RAIL_Y + 0.05F, -midRailOuter - 0.08F, 1.0F, RAIL_H - 0.10F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_ma_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(AFT_X1 - 0.5F, RAIL_Y + 0.05F, narRailOuter - 0.12F, 1.0F, RAIL_H - 0.10F, midRailOuter - narRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_bp_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0 - 0.2F, RAIL_Y + 0.05F, -narRailOuter - 0.08F, 1.0F, RAIL_H - 0.10F, narRailOuter - prowRailOuter + 0.20F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("rail_scarf_bp_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(PROW_X0 - 0.2F, RAIL_Y + 0.05F, prowRailOuter - 0.12F, 1.0F, RAIL_H - 0.10F, narRailOuter - prowRailOuter + 0.20F, d0), PartPose.ZERO);
 
         final float WALE_T = 0.28F;
         final float WALE_H = 2.45F;
 
         final float[] gunXs = {-34.0F, -26.0F, -12.0F, -4.0F, 4.0F, 12.0F, 24.0F, 32.0F};
         final float[] gunYs = {4.5F, 8.6F};
+        final float noseZ = PROW_Z - 2.1F;
+        final float midStemZ = PROW_Z - 0.9F;
+        final float stemFrontX = PROW_X1 + 1.6F;
+        final float midStemFrontX = stemFrontX + 1.5F;
+        final float noseFrontX = PROW_X1 + 3.1F + 1.4F;
 
         for (int row = 0; row < gunYs.length; row++) {
             float yBot = gunYs[row] - WALE_H * 0.5F;
@@ -254,13 +259,29 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
             body.addOrReplaceChild("wale_p_mid_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X0 - 0.15F, yBot, -MID_Z - WALE_T, MID_X1 - MID_X0 + 0.3F, WALE_H, WALE_T, d0), PartPose.ZERO);
             body.addOrReplaceChild("wale_s_mid_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X0 - 0.15F, yBot, MID_Z, MID_X1 - MID_X0 + 0.3F, WALE_H, WALE_T, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("wale_p_bow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X0 - 0.2F, yBot, -NARROW_Z - WALE_T, BOW_X1 - BOW_X0 - 1.5F, WALE_H, WALE_T, d0), PartPose.ZERO);
-            body.addOrReplaceChild("wale_s_bow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X0 - 0.2F, yBot, NARROW_Z, BOW_X1 - BOW_X0 - 1.5F, WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_p_bow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X0 - 0.2F, yBot, -NARROW_Z - WALE_T, BOW_X1 - BOW_X0 + 0.4F, WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_s_bow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X0 - 0.2F, yBot, NARROW_Z, BOW_X1 - BOW_X0 + 0.4F, WALE_H, WALE_T, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("wale_step_aft_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(AFT_X1 - 0.35F, yBot, -MID_Z - WALE_T, 0.7F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
-            body.addOrReplaceChild("wale_step_aft_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(AFT_X1 - 0.35F, yBot, NARROW_Z, 0.7F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
-            body.addOrReplaceChild("wale_step_bow_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X1 - 0.35F, yBot, -MID_Z - WALE_T, 0.7F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
-            body.addOrReplaceChild("wale_step_bow_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X1 - 0.35F, yBot, NARROW_Z, 0.7F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_step_aft_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(AFT_X1 - 0.95F, yBot, -MID_Z - WALE_T, 1.9F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_step_aft_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(AFT_X1 - 0.95F, yBot, NARROW_Z, 1.9F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_step_bow_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X1 - 0.95F, yBot, -MID_Z - WALE_T, 1.9F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_step_bow_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(MID_X1 - 0.95F, yBot, NARROW_Z, 1.9F, WALE_H, MID_Z - NARROW_Z + WALE_T, d0), PartPose.ZERO);
+
+            body.addOrReplaceChild("wale_step_bp_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X1 - 0.95F, yBot, -NARROW_Z - WALE_T, 1.9F, WALE_H, NARROW_Z - PROW_Z + WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_step_bp_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(BOW_X1 - 0.95F, yBot, PROW_Z, 1.9F, WALE_H, NARROW_Z - PROW_Z + WALE_T, d0), PartPose.ZERO);
+
+            body.addOrReplaceChild("wale_p_prow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(PROW_X0 - 0.1F, yBot, -PROW_Z - WALE_T, stemFrontX + 0.1F - (PROW_X0 - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_s_prow_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(PROW_X0 - 0.1F, yBot, PROW_Z, stemFrontX + 0.1F - (PROW_X0 - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_p_stem_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(stemFrontX - 0.1F, yBot, -midStemZ - WALE_T, midStemFrontX + 0.1F - (stemFrontX - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_s_stem_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(stemFrontX - 0.1F, yBot, midStemZ, midStemFrontX + 0.1F - (stemFrontX - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_p_nose_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midStemFrontX - 0.1F, yBot, -noseZ - WALE_T, noseFrontX + 0.1F - (midStemFrontX - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_s_nose_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midStemFrontX - 0.1F, yBot, noseZ, noseFrontX + 0.1F - (midStemFrontX - 0.1F), WALE_H, WALE_T, d0), PartPose.ZERO);
+
+            body.addOrReplaceChild("wale_f_stem_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(stemFrontX, yBot, -PROW_Z - WALE_T, WALE_T, WALE_H, PROW_Z + WALE_T - midStemZ, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_f_stem_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(stemFrontX, yBot, midStemZ, WALE_T, WALE_H, PROW_Z + WALE_T - midStemZ, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_f_mid_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midStemFrontX, yBot, -midStemZ - WALE_T, WALE_T, WALE_H, midStemZ + WALE_T - noseZ, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_f_mid_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midStemFrontX, yBot, noseZ, WALE_T, WALE_H, midStemZ + WALE_T - noseZ, d0), PartPose.ZERO);
+            body.addOrReplaceChild("wale_f_nose_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(noseFrontX, yBot, -(noseZ + WALE_T), WALE_T, WALE_H, (noseZ + WALE_T) * 2.0F, d0), PartPose.ZERO);
         }
 
         final float portW = 1.55F;
@@ -296,12 +317,12 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         }
 
         final float sternTop = DECK_Y + DECK_H + 0.12F;
-        body.addOrReplaceChild("stern_body", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(STERN_X0, 0.0F, -NARROW_Z, AFT_X0 - STERN_X0, sternTop, NARROW_Z * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("stern_body", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(STERN_X0 - 0.12F, 0.0F, -NARROW_Z, AFT_X0 - STERN_X0 + 0.12F, sternTop, NARROW_Z * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("stern_mid", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-54.5F, 0.15F, -8.5F, STERN_X0 - (-54.5F), sternTop - 0.15F, 17.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("stern_tip", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-55.8F, 0.45F, -7.0F, -54.5F - (-55.8F), sternTop - 0.45F, 14.0F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("counter0", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-54.5F, -2.2F, -7.5F, 5.0F, 2.8F, 15.0F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("counter1", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-55.8F, -1.2F, -5.5F, 2.5F, 2.0F, 11.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("counter0", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-54.45F, -2.2F, -7.5F, 5.0F, 2.8F, 15.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("counter1", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-55.75F, -1.2F, -5.45F, 2.45F, 2.0F, 10.9F, d0), PartPose.ZERO);
 
         body.addOrReplaceChild("keel_stern", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-54.0F, -3.5F, -5.5F, 17.0F, 3.5F, 11.0F, d0), PartPose.ZERO);
 
@@ -310,53 +331,45 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
 
         final float bodyX0 = -52.0F;
         final float midX0 = -54.5F;
-        final float tipX0 = -55.8F;
-        final float tipFaceX = -56.0F;
+        final float galX = -57.0F;
         final float halfBody = 10.0F;
         final float halfMid = 8.5F;
-        final float halfTip = 7.0F;
+        final float galZ = 7.15F;
         for (int row = 0; row < 2; row++) {
             float yb = (row == 0 ? 4.5F : 8.6F) - swH * 0.5F;
 
-            body.addOrReplaceChild("sw_mid_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, -halfMid - wT, midX0 + 3.2F - (midX0 - 0.15F), swH, wT, d0), PartPose.ZERO);
-            body.addOrReplaceChild("sw_mid_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, halfMid, midX0 + 3.2F - (midX0 - 0.15F), swH, wT, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_mid_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, -halfMid - wT, bodyX0 + 0.15F - (midX0 - 0.15F), swH, wT, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_mid_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, halfMid, bodyX0 + 0.15F - (midX0 - 0.15F), swH, wT, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("sw_tip_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(tipX0 - 0.25F, yb, -halfTip - wT, -tipX0 + 0.25F + bodyX0 + 0.3F, swH, wT, d0), PartPose.ZERO);
-            body.addOrReplaceChild("sw_tip_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(tipX0 - 0.25F, yb, halfTip, -tipX0 + 0.25F + bodyX0 + 0.3F, swH, wT, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_step0_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(bodyX0 - wT, yb, -halfBody - WALE_T, wT, swH, halfBody + WALE_T - halfMid, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_step0_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(bodyX0 - wT, yb, halfMid, wT, swH, halfBody + WALE_T - halfMid, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_step1_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - wT, yb, -halfMid - wT, wT, swH, halfMid + wT - galZ, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_step1_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - wT, yb, galZ, wT, swH, halfMid + wT - galZ, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("sw_face_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(tipFaceX, yb, -halfTip - 0.05F, wT + 0.1F, swH, halfTip * 2.0F + 0.1F, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_tip_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(galX, yb, -galZ - wT, midX0 - galX, swH, wT, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_tip_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(galX, yb, galZ, midX0 - galX, swH, wT, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("sw_corner_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(tipFaceX, yb, -halfTip - wT, wT + 0.35F, swH, wT + 0.35F, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_face_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(galX - wT, yb, -galZ, wT, swH, galZ * 2.0F, d0), PartPose.ZERO);
 
-            body.addOrReplaceChild("sw_corner_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(tipFaceX, yb, halfTip - 0.35F, wT + 0.35F, swH, wT + 0.35F, d0), PartPose.ZERO);
-
-            body.addOrReplaceChild("sw_step0_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(bodyX0 - 0.2F, yb, -halfBody - 0.02F, 0.55F, swH, halfBody - halfMid + 0.15F, d0), PartPose.ZERO);
-            body.addOrReplaceChild("sw_step0_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(bodyX0 - 0.2F, yb, halfMid - 0.1F, 0.55F, swH, halfBody - halfMid + 0.15F, d0), PartPose.ZERO);
-
-            body.addOrReplaceChild("sw_step1_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, -halfMid - 0.02F, 0.55F, swH, halfMid - halfTip + 0.15F, d0), PartPose.ZERO);
-            body.addOrReplaceChild("sw_step1_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(midX0 - 0.15F, yb, halfTip - 0.1F, 0.55F, swH, halfMid - halfTip + 0.15F, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_corner_p_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(galX - wT, yb, -galZ - wT, wT, swH, wT, d0), PartPose.ZERO);
+            body.addOrReplaceChild("sw_corner_s_r" + row, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(galX - wT, yb, galZ, wT, swH, wT, d0), PartPose.ZERO);
         }
 
         final float stemTipX = PROW_X1 + 3.1F + 1.4F;
-        final float bowGunY = 6.4F;
+        final float bowGunY = gunYs[1];
         final float[] bowGunZs = {-2.9F, 2.9F};
-        final float bowPlaqueHalf = 1.65F;
-        final float bowPlaqueT = 0.55F;
-
-        final float bowPlaqueX = stemTipX - 0.08F;
         final float bowPortW = 1.7F;
         final float bowPortH = 1.55F;
         final float bowPortT = 0.30F;
         final float bowBarrelOut = 2.85F;
-        final float bowBarrelIn = 0.55F;
+        final float bowBarrelIn = 0.63F;
         final float bowBarrelT = 0.95F;
         final float bowMuzzleT = 1.18F;
         final float bowMuzzleL = 0.58F;
-        final float bowPlaqueFront = bowPlaqueX + bowPlaqueT;
+        final float bowPlaqueFront = stemTipX + WALE_T;
         final float bowPortX = bowPlaqueFront + 0.03F;
         for (int i = 0; i < bowGunZs.length; i++) {
             float z = bowGunZs[i];
-            body.addOrReplaceChild("bow_plaque_" + i, CubeListBuilder.create().texOffs(WHITE, WHITE_V).addBox(bowPlaqueX, bowGunY - bowPlaqueHalf, z - bowPlaqueHalf, bowPlaqueT, bowPlaqueHalf * 2.0F, bowPlaqueHalf * 2.0F, d0), PartPose.ZERO);
             body.addOrReplaceChild("bow_port_" + i, CubeListBuilder.create().texOffs(BLACK, BLACK_V).addBox(bowPortX, bowGunY - bowPortH * 0.5F, z - bowPortW * 0.5F, bowPortT, bowPortH, bowPortW, d0), PartPose.ZERO);
             PartDefinition bowGun = body.addOrReplaceChild("bow_gun_" + i, CubeListBuilder.create(), PartPose.offset(bowPlaqueFront, bowGunY, z));
             bowGun.addOrReplaceChild("barrel", CubeListBuilder.create().texOffs(METAL, METAL_V).addBox(-bowBarrelIn, -bowBarrelT * 0.5F, -bowBarrelT * 0.5F, bowBarrelOut + bowBarrelIn, bowBarrelT, bowBarrelT, d0), PartPose.ZERO);
@@ -367,22 +380,22 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         final float cabinBot = deckY0 - 0.10F;
         final float galMidY = 16.0F;
         final float cabinTop = 18.05F;
-        final float poopY = cabinTop - 0.04F;
+        final float poopY = cabinTop;
         final float gAft = -57.0F;
         final float gJoin = -38.0F;
         final float cabinHalfZ = 8.85F;
         final float galOuterZ = 9.35F;
 
-        body.addOrReplaceChild("deck_stern", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(-54.0F, DECK_Y, -deckNarZ, AFT_X0 - (-54.0F), DECK_H, deckNarZ * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("deck_stern", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(STERN_X0 + 0.25F, DECK_Y, -deckNarZ, AFT_X0 - STERN_X0 - 0.25F, DECK_H, deckNarZ * 2.0F, d0), PartPose.ZERO);
 
         final float cabinX0 = gAft + 0.88F;
         final float cabinX1 = -37.6F;
         body.addOrReplaceChild("cabin_core", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(cabinX0, cabinBot, -cabinHalfZ, cabinX1 - cabinX0, cabinTop - cabinBot, cabinHalfZ * 2.0F, d0), PartPose.ZERO);
 
         body.addOrReplaceChild("stern_under_gal", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft, 0.40F, -7.15F, -55.7F - gAft, sternTop - 0.40F, 14.3F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("stern_gal_join", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft, sternTop - 0.35F, -(cabinHalfZ - 0.05F), AFT_X0 - gAft + 0.4F, cabinBot - (sternTop - 0.35F) + 0.25F, (cabinHalfZ - 0.05F) * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("stern_gal_join", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.08F, sternTop - 0.35F, -(cabinHalfZ - 0.05F), AFT_X0 - gAft + 0.4F, cabinBot - (sternTop - 0.35F) + 0.25F, (cabinHalfZ - 0.05F) * 2.0F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("gal_lo_face", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft, cabinBot, -(cabinHalfZ - 0.10F), 0.90F, galMidY - cabinBot, (cabinHalfZ - 0.10F) * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("gal_lo_face", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.04F, cabinBot + 0.04F, -(cabinHalfZ - 0.10F), 0.90F, galMidY - cabinBot - 0.04F, (cabinHalfZ - 0.10F) * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("gal_lo_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(cabinX0 + 0.05F, cabinBot, -galOuterZ, 11.2F, galMidY - cabinBot, 0.50F, d0), PartPose.ZERO);
         body.addOrReplaceChild("gal_lo_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(cabinX0 + 0.05F, cabinBot, galOuterZ - 0.50F, 11.2F, galMidY - cabinBot, 0.50F, d0), PartPose.ZERO);
 
@@ -393,13 +406,13 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         body.addOrReplaceChild("poop_deck", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(gAft - 0.4F, poopY, -9.0F, -gAft + gJoin + 0.8F, 0.85F, 18.0F, d0), PartPose.ZERO);
 
         body.addOrReplaceChild("taffrail_aft", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft - 0.35F, poopY + 0.85F, -8.8F, 0.95F, 1.35F, 17.6F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("taffrail_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.25F, poopY + 0.85F, -9.35F, -gAft + gJoin - 0.6F, 1.30F, 0.65F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("taffrail_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.25F, poopY + 0.85F, 8.70F, -gAft + gJoin - 0.6F, 1.30F, 0.65F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("taffrail_p", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.25F, poopY + 0.90F, -9.35F, -gAft + gJoin - 0.6F, 1.25F, 0.65F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("taffrail_s", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(gAft + 0.25F, poopY + 0.90F, 8.70F, -gAft + gJoin - 0.6F, 1.25F, 0.65F, d0), PartPose.ZERO);
 
         body.addOrReplaceChild("rail_bridge_p", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-42.0F, RAIL_Y, -10.40F, 5.5F, RAIL_H, 0.95F, d0), PartPose.ZERO);
         body.addOrReplaceChild("rail_bridge_s", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-42.0F, RAIL_Y, 9.45F, 5.5F, RAIL_H, 0.95F, d0), PartPose.ZERO);
 
-        body.addOrReplaceChild("rudder", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-2.0F, -5.0F, -1.0F, 5.0F, 14.5F, 2.0F, d0), PartPose.offset(-55.0F, 2.0F, 0.0F));
+        body.addOrReplaceChild("rudder", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-1.95F, -5.0F, -1.0F, 5.0F, 14.5F, 2.0F, d0), PartPose.offset(-55.0F, 2.0F, 0.0F));
         body.addOrReplaceChild("rudder_hinge", CubeListBuilder.create().texOffs(METAL, METAL_V).addBox(-0.4F, -3.0F, -0.4F, 0.8F, 8.0F, 0.8F, d0), PartPose.offset(-55.2F, 4.0F, 0.0F));
 
         final float deckY = DECK_Y + DECK_H;
@@ -450,8 +463,8 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         final float midX = bspOx + midT * bspLen * bspCos;
         final float midY = bspOy + midT * bspLen * bspSin;
 
-        final float stemX = 54.0F;
-        final float stemY = 3.5F;
+        final float stemX = noseFrontX;
+        final float stemY = gunYs[1] + WALE_H * 0.5F + 0.45F;
 
         body.addOrReplaceChild("bowsprit", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(0.0F, -bspHalf, -bspHalf, bspLen, bspHalf * 2.0F, bspHalf * 2.0F, d0), PartPose.offsetAndRotation(bspOx, bspOy, 0.0F, 0.0F, 0.0F, bspZRot));
 
@@ -510,13 +523,13 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         addYard(mastFore, "yard_fore_top", yardForeTopY, 10.5F, 0.85F, d0);
 
         addSquareSail(mastFore, "sail_fore", 1.15F, yardForeY, 24.0F, 13.5F, 11.8F, 1.0F, 1.05F, d0);
-        addSquareSail(mastFore, "sail_fore_top", 1.15F, yardForeTopY, 11.5F, 9.4F, 8.2F, 0.85F, 0.85F, d0);
+        addSquareSail(mastFore, "sail_fore_top", 1.30F, yardForeTopY, 11.5F, 9.4F, 8.2F, 0.85F, 0.85F, d0);
 
         PartDefinition mastMain = body.addOrReplaceChild("mast_main", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-1.8F, 0.0F, -1.8F, 3.6F, mainH, 3.6F, d0), PartPose.offset(mainX, deckY, 0.0F));
         addYard(mastMain, "yard_main", yardMainY, 18.0F, 1.2F, d0);
         addYard(mastMain, "yard_main_top", yardMainTopY, 12.0F, 0.95F, d0);
         addSquareSail(mastMain, "sail_main", 1.75F, yardMainY, 30.0F, 16.5F, 14.2F, 1.05F, 1.2F, d0);
-        addSquareSail(mastMain, "sail_main_top", 1.75F, yardMainTopY, 13.5F, 10.8F, 9.4F, 0.9F, 0.95F, d0);
+        addSquareSail(mastMain, "sail_main_top", 1.90F, yardMainTopY, 13.5F, 10.8F, 9.4F, 0.9F, 0.95F, d0);
 
         final float ensignStaffH = 4.8F;
         mastMain.addOrReplaceChild("ensign_staff", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.20F, mainH, -0.20F, 0.40F, ensignStaffH, 0.40F, d0), PartPose.ZERO);
@@ -527,7 +540,7 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         addYard(mastMizzen, "yard_mizzen", yardMizY, 12.0F, 0.95F, d0);
         addYard(mastMizzen, "yard_miz_top", yardMizTopY, 8.5F, 0.8F, d0);
         addSquareSail(mastMizzen, "sail_mizzen", 1.15F, yardMizY, 20.0F, 10.6F, 9.2F, 0.95F, 0.95F, d0);
-        addSquareSail(mastMizzen, "sail_miz_top", 1.15F, yardMizTopY, 10.0F, 7.5F, 6.5F, 0.8F, 0.8F, d0);
+        addSquareSail(mastMizzen, "sail_miz_top", 1.30F, yardMizTopY, 10.0F, 7.5F, 6.5F, 0.8F, 0.8F, d0);
 
         PartDefinition helm = body.addOrReplaceChild("helm", CubeListBuilder.create(), PartPose.offset(HELM_X, HELM_Y_WORLD, 0.0F));
         helm.addOrReplaceChild("base", CubeListBuilder.create().texOffs(WOOD, WOOD_V).addBox(-2.2F, 0.0F, -2.2F, 4.4F, 0.65F, 4.4F, d0), PartPose.ZERO);
@@ -542,15 +555,15 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         final float hub = 1.05F;
 
         wheel.addOrReplaceChild("hub", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, -hub * 0.5F, -hub * 0.5F, 1.1F, hub, hub, d0), PartPose.ZERO);
-        wheel.addOrReplaceChild("spoke_v", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.4F, -R, -t * 0.4F, t * 0.8F, R * 2.0F, t * 0.8F, d0), PartPose.ZERO);
-        wheel.addOrReplaceChild("spoke_h", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.4F, -t * 0.4F, -R, t * 0.8F, t * 0.8F, R * 2.0F, d0), PartPose.ZERO);
+        wheel.addOrReplaceChild("spoke_v", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.4F, -R + t, -t * 0.4F, t * 0.8F, R * 2.0F - t * 2.0F, t * 0.8F, d0), PartPose.ZERO);
+        wheel.addOrReplaceChild("spoke_h", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.4F, -t * 0.4F, -R + t, t * 0.8F, t * 0.8F, R * 2.0F - t * 2.0F, d0), PartPose.ZERO);
         wheel.addOrReplaceChild("spoke_d1", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.35F, -R, -t * 0.35F, t * 0.7F, R * 2.0F, t * 0.7F, d0), PartPose.rotation(Mth.PI / 4.0F, 0.0F, 0.0F));
         wheel.addOrReplaceChild("spoke_d2", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.35F, -R, -t * 0.35F, t * 0.7F, R * 2.0F, t * 0.7F, d0), PartPose.rotation(-Mth.PI / 4.0F, 0.0F, 0.0F));
 
         wheel.addOrReplaceChild("rim_top", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, R - t, -R, t, t, R * 2.0F, d0), PartPose.ZERO);
         wheel.addOrReplaceChild("rim_bot", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, -R, -R, t, t, R * 2.0F, d0), PartPose.ZERO);
-        wheel.addOrReplaceChild("rim_port", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, -R, -R, t, R * 2.0F, t, d0), PartPose.ZERO);
-        wheel.addOrReplaceChild("rim_stbd", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, -R, R - t, t, R * 2.0F, t, d0), PartPose.ZERO);
+        wheel.addOrReplaceChild("rim_port", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, -R + t, -R, t, R * 2.0F - t * 2.0F, t, d0), PartPose.ZERO);
+        wheel.addOrReplaceChild("rim_stbd", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-t * 0.5F, -R + t, R - t, t, R * 2.0F - t * 2.0F, t, d0), PartPose.ZERO);
 
         final float hLen = 0.95F;
         final float hT = 0.5F;
@@ -643,7 +656,7 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
 
         float footCy = hemY - sparThick * 0.55F - 0.10F;
 
-        float footCx = xOff - thick * 0.35F - 0.12F;
+        float footCx = xOff - thick * 0.35F - 0.28F;
         addYardSparMesh(flying, "foot", "foot_sling", sparThick, footHalfLen, footCx, footCy, d0);
 
         float step = height / (float) SAIL_ROWS;
@@ -676,7 +689,9 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
             for (int col = 0; col < SAIL_COLS; col++) {
                 float z0 = -halfSpan + col * colW - zOverlap;
                 int u = SAIL + uPad + (col * uSpan) / SAIL_COLS;
-                cloth.addOrReplaceChild(cellName(col, row), CubeListBuilder.create().texOffs(u, v).addBox(-cellThick * 0.5F, yTop, z0, cellThick, panelH, panelW, d0), PartPose.ZERO);
+                float xEps = (col % 2) * 0.04F + (row % 2) * 0.08F;
+                float yEps = (col % 2) * 0.02F;
+                cloth.addOrReplaceChild(cellName(col, row), CubeListBuilder.create().texOffs(u, v).addBox(-cellThick * 0.5F + xEps, yTop + yEps, z0, cellThick, panelH, panelW, d0), PartPose.ZERO);
             }
         }
     }
@@ -898,7 +913,6 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
         float segW = 1.70F * scale;
 
         float z0 = 0.0F;
-        float overlap = 0.14F * scale;
 
         flag.addOrReplaceChild("hoist", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.18F * scale, -0.15F, -0.12F, 0.36F * scale, 0.30F, 0.28F * scale, d0), PartPose.ZERO);
 
@@ -917,7 +931,7 @@ public class NapoleonShipModel extends EntityModel<NapoleonShipRenderState> {
             }
             float z = z0 + i * segW;
 
-            flag.addOrReplaceChild("seg" + i, CubeListBuilder.create().texOffs(u, v).addBox(-thick * 0.5F, -h, z, thick, h, segW + overlap, d0), PartPose.ZERO);
+            flag.addOrReplaceChild("seg" + i, CubeListBuilder.create().texOffs(u, v).addBox(-thick * 0.5F, -h, z, thick, h, segW, d0), PartPose.ZERO);
         }
     }
 

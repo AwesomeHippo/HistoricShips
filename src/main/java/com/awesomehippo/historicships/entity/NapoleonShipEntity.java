@@ -108,7 +108,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     public static final float BOW_AIM_MAX_DOWN = 10.0F;
     public static final float BOW_AIM_MAX_YAW = 30.0F;
     private static final double BOW_GUN_DIST = 60.5F * U + 2.6;
-    private static final double BOW_GUN_Y = 6.4F * U + 0.35;
+    private static final double BOW_GUN_Y = 8.6F * U + 0.35;
 
     public static final int MAX_WATER = 4000;
     public static final int WATER_PER_BUCKET = 1000;

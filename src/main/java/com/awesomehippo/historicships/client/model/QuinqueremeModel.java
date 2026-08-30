@@ -115,29 +115,28 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
 
         final float bilgeZ0 = -hb + 0.25F;
         final float bilgeZ = (hb - 0.25F) * 2.0F;
-        addSegX(body, "bilge", mid0, 0.0F, bilgeZ0, midLenA + midLenB + 0.4F, bilgeH, bilgeZ, TAN, TAN_V, d0);
+        addSegX(body, "bilge", mid0, 0.0F, bilgeZ0, midLenA + midLenB + 0.4F, bilgeH, bilgeZ, TAN, TAN_V, d0, 0.15F);
 
         final float wallT = 1.05F;
         final float fullMid = midLenA + midLenB + 0.4F;
-        addSegX(body, "red_p", mid0, redY, -hb - 0.20F, fullMid, redH, wallT, RED, RED_V, d0);
-        addSegX(body, "red_s", mid0, redY, hb - wallT + 0.20F, fullMid, redH, wallT, RED, RED_V, d0);
+        addSegX(body, "red_p", mid0, redY, -hb - 0.20F, fullMid, redH, wallT, RED, RED_V, d0, 0.15F);
+        addSegX(body, "red_s", mid0, redY, hb - wallT + 0.20F, fullMid, redH, wallT, RED, RED_V, d0, 0.15F);
 
         final float deckZ0 = -hb + 1.0F;
         final float deckZ = (hb - 1.0F) * 2.0F;
-        addSegX(body, "deck", mid0 + 0.5F, deckY, deckZ0, fullMid - 0.8F, 0.50F, deckZ, DECK, DECK_V, d0);
-
-        addSegX(body, "rail_p", mid0, deckY, -hb - 0.10F, fullMid, 0.65F, 0.65F, RED, RED_V, d0);
-        addSegX(body, "rail_s", mid0, deckY, hb - 0.55F, fullMid, 0.65F, 0.65F, RED, RED_V, d0);
-
-        addSegX(body, "keel", mid0 + 2.0F, -2.0F, -2.4F, fullMid - 4.0F, 2.0F, 4.8F, TAN, TAN_V, d0);
-
         final float b0 = midEnd - 0.35F;
+        addSegX(body, "deck", mid0 + 0.5F, deckY, deckZ0, b0 - (mid0 + 0.5F), 0.50F, deckZ, DECK, DECK_V, d0, 0.0F);
+
+        addSegX(body, "rail_p", mid0, deckY, -hb - 0.10F, fullMid, 0.65F, 0.65F, RED, RED_V, d0, 0.15F);
+        addSegX(body, "rail_s", mid0, deckY, hb - 0.55F, fullMid, 0.65F, 0.65F, RED, RED_V, d0, 0.15F);
+
+        addSegX(body, "keel", mid0 + 2.0F, -2.0F, -2.4F, fullMid - 4.0F, 2.0F, 4.8F, TAN, TAN_V, d0, 0.15F);
 
         final float ha = hb - 0.15F;
         body.addOrReplaceChild("bowA_tan", CubeListBuilder.create().texOffs(TAN, TAN_V).addBox(b0, 0.0F, -ha, 8.2F, bilgeH, ha * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowA_red_p", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b0, redY, -ha - 0.18F, 8.2F, redH, wallT, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowA_red_s", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b0, redY, ha - wallT + 0.18F, 8.2F, redH, wallT, d0), PartPose.ZERO);
-        body.addOrReplaceChild("bowA_deck", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(b0, deckY, -ha + 0.95F, 8.0F, 0.50F, (ha - 0.95F) * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("bowA_deck", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(b0, deckY, -ha + 0.95F, 7.6F, 0.50F, (ha - 0.95F) * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowA_rail_p", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b0, deckY, -ha - 0.05F, 8.0F, 0.60F, 0.55F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowA_rail_s", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b0, deckY, ha - 0.50F, 8.0F, 0.60F, 0.55F, d0), PartPose.ZERO);
 
@@ -149,7 +148,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         body.addOrReplaceChild("bowB_tan", CubeListBuilder.create().texOffs(TAN, TAN_V).addBox(b1, 0.05F, -hb1, 6.4F, bilgeH - 0.10F, hb1 * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowB_red_p", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b1, redY, -hb1 - 0.15F, 6.4F, redH - 0.05F, 0.95F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowB_red_s", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b1, redY, hb1 - 0.80F, 6.4F, redH - 0.05F, 0.95F, d0), PartPose.ZERO);
-        body.addOrReplaceChild("bowB_deck", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(b1, deckY, -hb1 + 0.70F, 6.2F, 0.50F, (hb1 - 0.70F) * 2.0F, d0), PartPose.ZERO);
+        body.addOrReplaceChild("bowB_deck", CubeListBuilder.create().texOffs(DECK, DECK_V).addBox(b1, deckY, -hb1 + 0.70F, 5.9F, 0.50F, (hb1 - 0.70F) * 2.0F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowB_rail_p", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b1, deckY, -hb1 - 0.02F, 6.2F, 0.55F, 0.50F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowB_rail_s", CubeListBuilder.create().texOffs(RED, RED_V).addBox(b1, deckY, hb1 - 0.48F, 6.2F, 0.55F, 0.50F, d0), PartPose.ZERO);
         body.addOrReplaceChild("bowB_gold_p", CubeListBuilder.create().texOffs(GOLD, GOLD_V).addBox(b1, 0.10F, -hb1 - 0.25F, 6.4F, 0.50F, 0.30F, d0), PartPose.ZERO);
@@ -303,14 +302,14 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         return LayerDefinition.create(mesh, TEX, TEX);
     }
 
-    private static void addSegX(PartDefinition body, String prefix, float x0, float y, float z0, float totalLen, float h, float depth, int u, int v, CubeDeformation d0) {
+    private static void addSegX(PartDefinition body, String prefix, float x0, float y, float z0, float totalLen, float h, float depth, int u, int v, CubeDeformation d0, float seam) {
         int i = 0;
         float x = x0;
         float end = x0 + totalLen;
         while (x < end - 0.01F) {
             float len = Math.min(SEG, end - x);
 
-            float draw = len + (x + len < end - 0.01F ? 0.15F : 0.0F);
+            float draw = len + (x + len < end - 0.01F ? seam : 0.0F);
             body.addOrReplaceChild(prefix + "_" + i, CubeListBuilder.create().texOffs(u, v).addBox(x, y, z0, draw, h, depth, d0), PartPose.ZERO);
             x += len;
             i++;

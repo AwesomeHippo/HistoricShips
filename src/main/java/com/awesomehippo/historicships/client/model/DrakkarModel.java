@@ -201,10 +201,13 @@ public class DrakkarModel extends EntityModel<OarShipRenderState> {
 
         addLineBetween(body, "stay_stern", -37.0F, 15.95F, 0.0F, -0.9F, truckY, 0.0F);
 
+        final float oarX0 = SHIELD_X0 - SHIELD_PITCH * 0.5F;
+        final float oarY = 6.55F;
+        final float oarZ = 6.40F;
         for (int i = 0; i < OAR_PAIRS; i++) {
-            float x = -14.0F + i * 4.0F;
-            ShipOars.addOar(body, "oar_p" + i, x, 5.45F, -6.05F, true, 13.5F, OAR, OAR_V, d0);
-            ShipOars.addOar(body, "oar_s" + i, x, 5.45F, 6.05F, false, 13.5F, OAR, OAR_V, d0);
+            float x = oarX0 + i * SHIELD_PITCH;
+            ShipOars.addOar(body, "oar_p" + i, x, oarY, -oarZ, true, 13.5F, OAR, OAR_V, d0);
+            ShipOars.addOar(body, "oar_s" + i, x, oarY, oarZ, false, 13.5F, OAR, OAR_V, d0);
         }
 
         return LayerDefinition.create(mesh, TEX, TEX);
