@@ -1,5 +1,8 @@
 # Changelog
 
+### Version 26.1.2 - 2.0.0 (NeoForge) 2026-08-30
+- a TONS of update... (todo)
+
 ### Version 26.1.2 - 1.2.0 (NeoForge) 2026-08-28
 - Now possible to repair ships by 15% with 30 planks (can be done inside/outside)
 - Fixed cargo to drop all the contained items when a ship sinks and when you pick it
