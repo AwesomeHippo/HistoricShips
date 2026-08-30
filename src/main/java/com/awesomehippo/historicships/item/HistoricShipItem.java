@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.item;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.entity.StoredShipEntity;
 
 import net.minecraft.network.chat.Component;
@@ -73,7 +73,7 @@ public abstract class HistoricShipItem extends Item {
             if (!level.isClientSide()) {
                 if (boat instanceof StoredShipEntity ship) {
                     ship.setOwner(player);
-                    Integer hull = stack.get(NapoleonShipMod.SHIP_HULL.get());
+                    Integer hull = stack.get(HistoricShips.SHIP_HULL.get());
                     if (hull != null) {
                         ship.setHullPercent(hull);
                     }

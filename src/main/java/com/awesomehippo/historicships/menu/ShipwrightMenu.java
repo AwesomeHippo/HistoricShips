@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.menu;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.blockentity.ShipwrightWorkbenchBlockEntity;
 import com.awesomehippo.historicships.recipe.ShipAssemblyRecipe;
 
@@ -50,7 +50,7 @@ public class ShipwrightMenu extends AbstractContainerMenu {
     }
 
     public ShipwrightMenu(int containerId, Inventory playerInv, Container container, ContainerLevelAccess access) {
-        super(NapoleonShipMod.SHIPWRIGHT_MENU.get(), containerId);
+        super(HistoricShips.SHIPWRIGHT_MENU.get(), containerId);
         this.container = container;
         this.access = access;
         container.startOpen(playerInv.player);

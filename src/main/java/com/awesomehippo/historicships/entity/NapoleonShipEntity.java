@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 
@@ -166,7 +166,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     public NapoleonShipEntity(Level level, double x, double y, double z) {
-        this(NapoleonShipMod.NAPOLEON_SHIP_ENTITY.get(), level);
+        this(HistoricShips.NAPOLEON_SHIP_ENTITY.get(), level);
         this.setPos(x, y, z);
         this.xo = x;
         this.yo = y;
@@ -235,7 +235,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
 
     @Override
     protected ItemStack createDropStack() {
-        return new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get());
+        return new ItemStack(HistoricShips.NAPOLEON_SHIP_ITEM.get());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.menu;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.entity.NapoleonShipEntity;
 
 import net.minecraft.world.Container;
@@ -41,7 +41,7 @@ public class NapoleonEngineMenu extends AbstractContainerMenu {
     }
 
     public NapoleonEngineMenu(int containerId, Inventory playerInv, Container engine, ContainerData data, NapoleonShipEntity ship) {
-        super(NapoleonShipMod.ENGINE_MENU.get(), containerId);
+        super(HistoricShips.ENGINE_MENU.get(), containerId);
         checkContainerSize(engine, ENGINE_SLOTS);
         checkContainerDataCount(data, DATA_COUNT);
         this.engine = engine;

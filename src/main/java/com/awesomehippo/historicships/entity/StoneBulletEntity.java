@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -36,7 +36,7 @@ public class StoneBulletEntity extends ThrowableItemProjectile {
     }
 
     public StoneBulletEntity(Level level, double x, double y, double z, @Nullable LivingEntity owner) {
-        super(NapoleonShipMod.STONE_BULLET_ENTITY.get(), x, y, z, level, new ItemStack(Items.COBBLESTONE));
+        super(HistoricShips.STONE_BULLET_ENTITY.get(), x, y, z, level, new ItemStack(Items.COBBLESTONE));
         if (owner != null) {
             this.setOwner(owner);
         }

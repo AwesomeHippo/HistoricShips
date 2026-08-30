@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.client.screen;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,7 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 public class NapoleonEngineScreen extends AbstractContainerScreen<NapoleonEngineMenu> {
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(NapoleonShipMod.MODID, "textures/gui/napoleon_engine.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(HistoricShips.MODID, "textures/gui/napoleon_engine.png");
     private static final Identifier LIT_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
     private static final Identifier ARROW_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
     private static final Identifier WATER_STILL = Identifier.withDefaultNamespace("block/water_still");

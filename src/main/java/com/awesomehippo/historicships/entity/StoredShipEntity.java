@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.network.RamHitPacket;
 
 import net.minecraft.core.NonNullList;
@@ -871,7 +871,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         ItemStack stack = this.createDropStack();
         int pct = this.getHullPercent();
         if (pct < 100) {
-            stack.set(NapoleonShipMod.SHIP_HULL.get(), pct);
+            stack.set(HistoricShips.SHIP_HULL.get(), pct);
         }
         this.writeDropStack(stack);
         if (!player.getInventory().add(stack) || !stack.isEmpty()) {

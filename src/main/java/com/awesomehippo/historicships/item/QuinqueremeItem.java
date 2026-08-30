@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.item;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 import com.awesomehippo.historicships.entity.SailPaint;
@@ -32,7 +32,7 @@ public class QuinqueremeItem extends HistoricShipItem {
     @Override
     protected void applyPlaceData(ItemStack stack, Entity boat) {
         if (boat instanceof QuinqueremeEntity quinquereme) {
-            SailPaint.Data paint = stack.get(NapoleonShipMod.SHIP_SAIL_PAINT.get());
+            SailPaint.Data paint = stack.get(HistoricShips.SHIP_SAIL_PAINT.get());
             if (paint != null && SailPaint.isValid(paint.pixels())) {
                 quinquereme.setSailPaintData(paint.pixels());
             }

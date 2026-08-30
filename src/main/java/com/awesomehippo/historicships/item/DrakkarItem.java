@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.item;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.entity.DrakkarEntity;
 import com.awesomehippo.historicships.entity.DrakkarSailStripe;
@@ -32,7 +32,7 @@ public class DrakkarItem extends HistoricShipItem {
     @Override
     protected void applyPlaceData(ItemStack stack, Entity boat) {
         if (boat instanceof DrakkarEntity drakkar) {
-            Integer stripe = stack.get(NapoleonShipMod.SHIP_SAIL_STRIPE.get());
+            Integer stripe = stack.get(HistoricShips.SHIP_SAIL_STRIPE.get());
             if (stripe != null) {
                 drakkar.setSailStripe(DrakkarSailStripe.byId(stripe.byteValue()));
             }

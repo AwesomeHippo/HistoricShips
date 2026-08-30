@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.network;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 import com.awesomehippo.historicships.entity.SailPaint;
 
@@ -14,7 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SailPaintPacket(int entityId, byte[] pixels) implements CustomPacketPayload {
-    public static final Type<SailPaintPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(NapoleonShipMod.MODID, "sail_paint"));
+    public static final Type<SailPaintPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(HistoricShips.MODID, "sail_paint"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, SailPaintPacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, SailPaintPacket::entityId,

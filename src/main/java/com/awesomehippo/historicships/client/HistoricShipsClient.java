@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.client;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.client.model.DrakkarModel;
 import com.awesomehippo.historicships.client.model.NapoleonShipModel;
 import com.awesomehippo.historicships.client.model.QuinqueremeModel;
@@ -51,8 +51,8 @@ import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-@Mod(value = NapoleonShipMod.MODID, dist = Dist.CLIENT)
-public class NapoleonShipClient {
+@Mod(value = HistoricShips.MODID, dist = Dist.CLIENT)
+public class HistoricShipsClient {
 
     private static final float CONDUCTOR_FOV = 28.0F;
 
@@ -80,11 +80,11 @@ public class NapoleonShipClient {
     private int lastSpeedLabelTick = -999;
     private boolean frontHeld;
 
-    public NapoleonShipClient(IEventBus modBus) {
+    public HistoricShipsClient(IEventBus modBus) {
         modBus.addListener(this::registerLayers);
         modBus.addListener(this::registerRenderers);
         modBus.addListener(this::registerScreens);
-        modBus.addListener(NapoleonShipKeys::register);
+        modBus.addListener(HistoricShipsKeys::register);
 
         RamHitPacket.clientSend = packet -> ClientPacketDistributor.sendToServer(packet);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
@@ -101,7 +101,7 @@ public class NapoleonShipClient {
         if (!event.getLevel().isClientSide() || !(event.getTarget() instanceof QuinqueremeEntity ship)) {
             return;
         }
-        if (event.getItemStack().is(NapoleonShipMod.SAIL_BRUSH.get()) && ship.canEditSail(event.getEntity())) {
+        if (event.getItemStack().is(HistoricShips.SAIL_BRUSH.get()) && ship.canEditSail(event.getEntity())) {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
             SailPaintScreen.open(ship);
@@ -121,11 +121,11 @@ public class NapoleonShipClient {
     private void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         if (stack.getItem() instanceof HistoricShipItem) {
-            Integer hull = stack.get(NapoleonShipMod.SHIP_HULL.get());
+            Integer hull = stack.get(HistoricShips.SHIP_HULL.get());
             if (hull != null) {
                 event.getToolTip().add(Component.translatable("item.historicships.hull", hull));
             }
-            Integer stripe = stack.get(NapoleonShipMod.SHIP_SAIL_STRIPE.get());
+            Integer stripe = stack.get(HistoricShips.SHIP_SAIL_STRIPE.get());
             if (stripe != null) {
                 event.getToolTip().add(Component.translatable("item.historicships.sail_stripe", Component.translatable("color.minecraft." + DrakkarSailStripe.byId(stripe.byteValue()).dye().getName())));
             }
@@ -133,8 +133,8 @@ public class NapoleonShipClient {
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(NapoleonShipMod.SHIPWRIGHT_MENU.get(), ShipwrightScreen::new);
-        event.register(NapoleonShipMod.ENGINE_MENU.get(), NapoleonEngineScreen::new);
+        event.register(HistoricShips.SHIPWRIGHT_MENU.get(), ShipwrightScreen::new);
+        event.register(HistoricShips.ENGINE_MENU.get(), NapoleonEngineScreen::new);
     }
 
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -145,12 +145,12 @@ public class NapoleonShipClient {
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(NapoleonShipMod.NAPOLEON_SHIP_ENTITY.get(), NapoleonShipRenderer::new);
-        event.registerEntityRenderer(NapoleonShipMod.DRAKKAR_ENTITY.get(), DrakkarRenderer::new);
-        event.registerEntityRenderer(NapoleonShipMod.QUINQUEREME_ENTITY.get(), QuinqueremeRenderer::new);
+        event.registerEntityRenderer(HistoricShips.NAPOLEON_SHIP_ENTITY.get(), NapoleonShipRenderer::new);
+        event.registerEntityRenderer(HistoricShips.DRAKKAR_ENTITY.get(), DrakkarRenderer::new);
+        event.registerEntityRenderer(HistoricShips.QUINQUEREME_ENTITY.get(), QuinqueremeRenderer::new);
 
-        event.registerEntityRenderer(NapoleonShipMod.CANNONBALL_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 4.6F, true));
-        event.registerEntityRenderer(NapoleonShipMod.STONE_BULLET_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 3.4F, true));
+        event.registerEntityRenderer(HistoricShips.CANNONBALL_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 4.6F, true));
+        event.registerEntityRenderer(HistoricShips.STONE_BULLET_ENTITY.get(), ctx -> new ThrownItemRenderer<>(ctx, 3.4F, true));
     }
 
     private void onClientTick(ClientTickEvent.Post event) {
@@ -161,15 +161,15 @@ public class NapoleonShipClient {
         }
         LocalPlayer player = mc.player;
         if (player.getVehicle() instanceof NapoleonShipEntity napoleon) {
-            if (NapoleonShipKeys.OPEN_ENGINE.consumeClick()) {
+            if (HistoricShipsKeys.OPEN_ENGINE.consumeClick()) {
                 ClientPacketDistributor.sendToServer(new OpenEnginePacket(napoleon.getId()));
             }
             if (!napoleon.isConductor(player)) {
                 this.frontHeld = false;
                 return;
             }
-            boolean down = NapoleonShipKeys.FIRE_FRONT.isDown();
-            NapoleonShipKeys.FIRE_FRONT.consumeClick();
+            boolean down = HistoricShipsKeys.FIRE_FRONT.isDown();
+            HistoricShipsKeys.FIRE_FRONT.consumeClick();
             if (down) {
                 this.frontHeld = true;
             } else if (this.frontHeld) {
@@ -178,17 +178,17 @@ public class NapoleonShipClient {
                     ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.FRONT));
                 }
             }
-            if (NapoleonShipKeys.FIRE_LEFT.consumeClick()) {
+            if (HistoricShipsKeys.FIRE_LEFT.consumeClick()) {
                 if (napoleon.tryFireAll()) {
                     ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.LEFT));
                 }
             }
-            if (NapoleonShipKeys.FIRE_RIGHT.consumeClick()) {
+            if (HistoricShipsKeys.FIRE_RIGHT.consumeClick()) {
                 if (napoleon.tryFireAll()) {
                     ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.RIGHT));
                 }
             }
-            if (NapoleonShipKeys.TOGGLE_SAILS.consumeClick()) {
+            if (HistoricShipsKeys.TOGGLE_SAILS.consumeClick()) {
                 ClientPacketDistributor.sendToServer(new ToggleSailsPacket(napoleon.getId()));
             }
             return;
@@ -198,8 +198,8 @@ public class NapoleonShipClient {
                 this.frontHeld = false;
                 return;
             }
-            boolean down = NapoleonShipKeys.FIRE_FRONT.isDown();
-            NapoleonShipKeys.FIRE_FRONT.consumeClick();
+            boolean down = HistoricShipsKeys.FIRE_FRONT.isDown();
+            HistoricShipsKeys.FIRE_FRONT.consumeClick();
             if (down) {
                 this.frontHeld = true;
             } else if (this.frontHeld) {
@@ -343,7 +343,7 @@ public class NapoleonShipClient {
     }
 
     private void drawQuinqueremePanel(GuiGraphicsExtractor g, Font font, int sw, QuinqueremeEntity ship) {
-        String kFire = NapoleonShipKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
+        String kFire = HistoricShipsKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
         String tower = ship.getTowerCooldown() > 0
                 ? tr("gui.historicships.hud.weapon_wait", kFire, ship.getTowerCooldown() / 20 + 1)
                 : tr("gui.historicships.hud.weapon_ready", kFire);
@@ -358,12 +358,12 @@ public class NapoleonShipClient {
     }
 
     private void drawConductorPanel(GuiGraphicsExtractor g, Font font, int sw, NapoleonShipEntity ship) {
-        String kFire = NapoleonShipKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
-        String kLeft = NapoleonShipKeys.FIRE_LEFT.getTranslatedKeyMessage().getString();
-        String kRight = NapoleonShipKeys.FIRE_RIGHT.getTranslatedKeyMessage().getString();
+        String kFire = HistoricShipsKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
+        String kLeft = HistoricShipsKeys.FIRE_LEFT.getTranslatedKeyMessage().getString();
+        String kRight = HistoricShipsKeys.FIRE_RIGHT.getTranslatedKeyMessage().getString();
         String kGuns = kFire + " / " + kLeft + " / " + kRight;
-        String kSail = NapoleonShipKeys.TOGGLE_SAILS.getTranslatedKeyMessage().getString();
-        String kEngine = NapoleonShipKeys.OPEN_ENGINE.getTranslatedKeyMessage().getString();
+        String kSail = HistoricShipsKeys.TOGGLE_SAILS.getTranslatedKeyMessage().getString();
+        String kEngine = HistoricShipsKeys.OPEN_ENGINE.getTranslatedKeyMessage().getString();
 
         String guns = ship.getBroadsideCooldown() > 0
                 ? tr("gui.historicships.hud.weapon_wait", kGuns, ship.getBroadsideCooldown() / 20 + 1)

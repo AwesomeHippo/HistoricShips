@@ -55,8 +55,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-@Mod(NapoleonShipMod.MODID)
-public class NapoleonShipMod {
+@Mod(HistoricShips.MODID)
+public class HistoricShips {
     public static final String MODID = "historicships";
 
     public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(MODID);
@@ -95,7 +95,7 @@ public class NapoleonShipMod {
     public static final DeferredItem<QuinqueremeItem> QUINQUEREME_ITEM = ITEMS.registerItem("quinquereme", QuinqueremeItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<Item> SAIL_BRUSH = ITEMS.registerItem("sail_brush", Item::new, props -> props.stacksTo(1));
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.historicships")).icon(NapoleonShipMod::tabIcon).displayItems((params, output) -> {
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.historicships")).icon(HistoricShips::tabIcon).displayItems((params, output) -> {
         output.accept(SHIPWRIGHT_WORKBENCH_ITEM.get());
         if (ShipsConfig.DRAKKAR.get()) {
             output.accept(DRAKKAR_ITEM.get());
@@ -109,7 +109,7 @@ public class NapoleonShipMod {
         }
     }).build());
 
-    public NapoleonShipMod(IEventBus modBus, ModContainer container) {
+    public HistoricShips(IEventBus modBus, ModContainer container) {
         ENTITIES.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

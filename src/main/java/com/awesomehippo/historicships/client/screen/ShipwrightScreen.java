@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.client.screen;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.recipe.ShipAssemblyRecipe;
 
@@ -17,7 +17,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public class ShipwrightScreen extends AbstractContainerScreen<ShipwrightMenu> {
-    private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(NapoleonShipMod.MODID, "textures/gui/shipwright.png");
+    private static final Identifier BACKGROUND = Identifier.fromNamespaceAndPath(HistoricShips.MODID, "textures/gui/shipwright.png");
 
     private static final int READY = 0xFF2E8B2E;
 

@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.blockentity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.recipe.ShipAssemblyRecipe;
 
@@ -21,7 +21,7 @@ public class ShipwrightWorkbenchBlockEntity extends BaseContainerBlockEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(ShipAssemblyRecipe.TOTAL_SLOTS, ItemStack.EMPTY);
 
     public ShipwrightWorkbenchBlockEntity(BlockPos pos, BlockState state) {
-        super(NapoleonShipMod.SHIPWRIGHT_WORKBENCH_BE.get(), pos, state);
+        super(HistoricShips.SHIPWRIGHT_WORKBENCH_BE.get(), pos, state);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -36,7 +36,7 @@ public class CannonballEntity extends ThrowableItemProjectile {
     }
 
     public CannonballEntity(Level level, double x, double y, double z, @Nullable LivingEntity owner, float explosionPower) {
-        super(NapoleonShipMod.CANNONBALL_ENTITY.get(), x, y, z, level, new ItemStack(Items.FIRE_CHARGE));
+        super(HistoricShips.CANNONBALL_ENTITY.get(), x, y, z, level, new ItemStack(Items.FIRE_CHARGE));
         if (owner != null) {
             this.setOwner(owner);
         }

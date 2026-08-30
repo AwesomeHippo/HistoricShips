@@ -40,7 +40,7 @@ public final class BowTrajectoryPreview {
         if (mc.player == null || mc.level == null || mc.screen != null) {
             return;
         }
-        if (!NapoleonShipKeys.FIRE_FRONT.isDown()) {
+        if (!HistoricShipsKeys.FIRE_FRONT.isDown()) {
             return;
         }
         List<Vec3> points = trace(mc.player);

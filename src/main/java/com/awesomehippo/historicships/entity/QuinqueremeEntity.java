@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.network.SailPaintPacket;
 
 import net.minecraft.core.particles.BlockParticleOption;
@@ -81,14 +81,14 @@ public class QuinqueremeEntity extends OarShipEntity {
             0.48D, 0.16F,
             0.022D, 0.00030D, 0.0026D, 0.988D,
             1.80D, 0.22D, 0.55F, 0.40F, 0.38F, 0.07D,
-            () -> new ItemStack(NapoleonShipMod.QUINQUEREME_ITEM.get()));
+            () -> new ItemStack(HistoricShips.QUINQUEREME_ITEM.get()));
 
     public QuinqueremeEntity(EntityType<? extends QuinqueremeEntity> type, Level level) {
         super(type, level);
     }
 
     public QuinqueremeEntity(Level level, double x, double y, double z) {
-        this(NapoleonShipMod.QUINQUEREME_ENTITY.get(), level);
+        this(HistoricShips.QUINQUEREME_ENTITY.get(), level);
         this.placeAt(x, y, z);
     }
 
@@ -160,7 +160,7 @@ public class QuinqueremeEntity extends OarShipEntity {
     @Override
     protected void writeDropStack(ItemStack stack) {
         if (this.sailPaint != null) {
-            stack.set(NapoleonShipMod.SHIP_SAIL_PAINT.get(), new SailPaint.Data(this.sailPaint));
+            stack.set(HistoricShips.SHIP_SAIL_PAINT.get(), new SailPaint.Data(this.sailPaint));
         }
     }
 
@@ -181,7 +181,7 @@ public class QuinqueremeEntity extends OarShipEntity {
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hit) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.is(NapoleonShipMod.SAIL_BRUSH.get()) && this.canEditSail(player)) {
+        if (stack.is(HistoricShips.SAIL_BRUSH.get()) && this.canEditSail(player)) {
             return InteractionResult.SUCCESS;
         }
         if (stack.is(Items.LEAD)) {

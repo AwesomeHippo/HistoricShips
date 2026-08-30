@@ -6,7 +6,7 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 
-public final class NapoleonShipKeys {
+public final class HistoricShipsKeys {
     public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath("historicships", "ship"));
     public static final KeyMapping FIRE_FRONT = new KeyMapping("key.historicships.fire_front", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 86, CATEGORY);
     public static final KeyMapping FIRE_LEFT = new KeyMapping("key.historicships.fire_left", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, 78, CATEGORY);

@@ -1,6 +1,6 @@
 package com.awesomehippo.historicships.entity;
 
-import com.awesomehippo.historicships.NapoleonShipMod;
+import com.awesomehippo.historicships.HistoricShips;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -53,14 +53,14 @@ public class DrakkarEntity extends OarShipEntity {
             0.52D, 0.18F,
             0.024D, 0.00035D, 0.0028D, 0.989D,
             2.40D, 0.10D, 0.60F, 0.42F, 0.38F, 0.08D,
-            () -> new ItemStack(NapoleonShipMod.DRAKKAR_ITEM.get()));
+            () -> new ItemStack(HistoricShips.DRAKKAR_ITEM.get()));
 
     public DrakkarEntity(EntityType<? extends DrakkarEntity> type, Level level) {
         super(type, level);
     }
 
     public DrakkarEntity(Level level, double x, double y, double z) {
-        this(NapoleonShipMod.DRAKKAR_ENTITY.get(), level);
+        this(HistoricShips.DRAKKAR_ENTITY.get(), level);
         this.placeAt(x, y, z);
     }
 
@@ -102,7 +102,7 @@ public class DrakkarEntity extends OarShipEntity {
     protected void writeDropStack(ItemStack stack) {
         DrakkarSailStripe stripe = this.getSailStripe();
         if (stripe != DrakkarSailStripe.RED) {
-            stack.set(NapoleonShipMod.SHIP_SAIL_STRIPE.get(), (int) stripe.id());
+            stack.set(HistoricShips.SHIP_SAIL_STRIPE.get(), (int) stripe.id());
         }
     }
 
