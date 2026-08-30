@@ -400,15 +400,16 @@ public class HistoricShipsClient {
         if (ship.canSteamBoost() || this.engineHintTick++ % 20 != 0) {
             return;
         }
-        if (ship.getWaterLevel() <= 0) {
-            player.sendOverlayMessage(Component.translatable("gui.historicships.hud.no_water"));
-            return;
-        }
         Minecraft mc = Minecraft.getInstance();
         if (mc.options == null) {
             return;
         }
-        player.sendOverlayMessage(Component.translatable("gui.historicships.hud.need_coal", keyName(mc.options.keyInventory)));
+        String inv = keyName(mc.options.keyInventory);
+        if (ship.getWaterLevel() <= 0) {
+            player.sendOverlayMessage(Component.translatable("gui.historicships.hud.need_water", inv));
+            return;
+        }
+        player.sendOverlayMessage(Component.translatable("gui.historicships.hud.need_coal", inv));
     }
 
     private static String panelTitle(StoredShipEntity ship, String title) {
