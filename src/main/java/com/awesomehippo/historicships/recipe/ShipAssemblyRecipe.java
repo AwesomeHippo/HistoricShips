@@ -116,9 +116,9 @@ public final class ShipAssemblyRecipe {
     }
 
     private static final List<ShipAssemblyRecipe> RECIPES = List.of(
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.drakkar"), () -> new ItemStack(NapoleonShipMod.DRAKKAR_ITEM.get()), List.of(tag(ItemTags.LOGS, 16), item(Items.STICK, 8), item(Items.WHITE_WOOL, 4), item(Items.STRING, 4), item(Items.LEATHER, 2)), ShipsConfig.DRAKKAR),
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.quinquereme"), () -> new ItemStack(NapoleonShipMod.QUINQUEREME_ITEM.get()), List.of(tag(ItemTags.LOGS, 28), item(Items.STICK, 16), item(Items.RED_WOOL, 6), item(Items.COPPER_INGOT, 12), item(Items.IRON_INGOT, 4), item(Items.STRING, 6), item(Items.GOLD_NUGGET, 8)), ShipsConfig.QUINQUEREME),
-            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.napoleon_ship"), () -> new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get()), List.of(tag(ItemTags.LOGS, 48), item(Items.IRON_INGOT, 32), item(Items.IRON_BLOCK, 4), item(Items.BLAST_FURNACE, 1), item(Items.REDSTONE, 16), item(Items.COPPER_INGOT, 16), item(Items.WHITE_WOOL, 8), item(Items.BLUE_DYE, 2), item(Items.RED_DYE, 2), item(Items.WHITE_DYE, 2), item(Items.COAL_BLOCK, 4)), ShipsConfig.NAPOLEON_SHIP));
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.drakkar"), () -> new ItemStack(NapoleonShipMod.DRAKKAR_ITEM.get()), List.of(tag(ItemTags.LOGS, 48), item(Items.STICK, 8), item(Items.WHITE_WOOL, 4), item(Items.STRING, 4), item(Items.LEATHER, 2)), ShipsConfig.DRAKKAR),
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.quinquereme"), () -> new ItemStack(NapoleonShipMod.QUINQUEREME_ITEM.get()), List.of(tag(ItemTags.LOGS, 64), item(Items.STICK, 16), item(Items.RED_WOOL, 6), item(Items.COPPER_INGOT, 12), item(Items.IRON_INGOT, 4), item(Items.STRING, 6), item(Items.GOLD_NUGGET, 8)), ShipsConfig.QUINQUEREME),
+            new ShipAssemblyRecipe(Component.translatable("gui.historicships.recipe.napoleon_ship"), () -> new ItemStack(NapoleonShipMod.NAPOLEON_SHIP_ITEM.get()), List.of(tag(ItemTags.LOGS, 80), item(Items.IRON_INGOT, 32), item(Items.IRON_BLOCK, 4), item(Items.BLAST_FURNACE, 1), item(Items.REDSTONE, 16), item(Items.COPPER_INGOT, 16), item(Items.WHITE_WOOL, 8), item(Items.BLUE_DYE, 2), item(Items.RED_DYE, 2), item(Items.WHITE_DYE, 2), item(Items.COAL_BLOCK, 4)), ShipsConfig.NAPOLEON_SHIP));
 
     private static CountedNeed item(ItemLike item, int count) {
         Item resolved = item.asItem();
