@@ -9,8 +9,8 @@
 - Ships now actually collide with each other & drastically improved ship collision boxes overall
 - Drakkar sail color is now kept on pickup & the item icon now match the set color
 - Actually improved the Quinquereme side shields design. (replaced the old mini stone points lol)
-- Quinquereme main sail is now paintable with the new Sail Brush! (with 2 presets available: SQPR and Roman eagle)
-- Improved the Quinquereme ram (longer, golden color..) + it now deals damage on other ships imapct!
+- Quinquereme main sail is now paintable with the new Sail Brush! (with 2 presets available: SPQR and Roman eagle)
+- Improved the Quinquereme ram (longer, golden color..) + it now deals damage on other ships impact!
 - Raised the Quinquereme front sail
 - Small updates & Update translations
 
