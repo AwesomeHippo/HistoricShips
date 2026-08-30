@@ -20,7 +20,8 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class CannonballEntity extends ThrowableItemProjectile {
-    private static final float EXPLOSION_POWER = 2.25F;
+    public static final float FRONT_EXPLOSION = 3.6F;
+    public static final float SIDE_EXPLOSION = 0.75F;
     private static final float LIVING_DAMAGE = 12.0F;
     private static final int MAX_LIFE = 210;
     private static final double SPLASH_RADIUS = 6.0;
@@ -28,16 +29,18 @@ public class CannonballEntity extends ThrowableItemProjectile {
     private static final double OVERLAP_INFLATE = 1.5;
 
     private @Nullable Entity sourceShip;
+    private float explosionPower = FRONT_EXPLOSION;
 
     public CannonballEntity(EntityType<? extends CannonballEntity> type, Level level) {
         super(type, level);
     }
 
-    public CannonballEntity(Level level, double x, double y, double z, @Nullable LivingEntity owner) {
+    public CannonballEntity(Level level, double x, double y, double z, @Nullable LivingEntity owner, float explosionPower) {
         super(NapoleonShipMod.CANNONBALL_ENTITY.get(), x, y, z, level, new ItemStack(Items.FIRE_CHARGE));
         if (owner != null) {
             this.setOwner(owner);
         }
+        this.explosionPower = explosionPower;
     }
 
     public void setSourceShip(@Nullable Entity ship) {
@@ -131,7 +134,7 @@ public class CannonballEntity extends ThrowableItemProjectile {
         }
         if (this.level() instanceof ServerLevel server) {
             ShipProjectileHits.splashShips(server, this, this.sourceShip, this.position(), SPLASH_RADIUS, StoredShipEntity.CANNON_HULL_DAMAGE);
-            server.explode(this, this.getX(), this.getY(), this.getZ(), EXPLOSION_POWER, false, Level.ExplosionInteraction.TNT);
+            server.explode(this, this.getX(), this.getY(), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
             server.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.1F, 0.7F + this.random.nextFloat() * 0.1F);
         }
         this.discard();

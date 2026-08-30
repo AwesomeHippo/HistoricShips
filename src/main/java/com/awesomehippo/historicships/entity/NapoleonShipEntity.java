@@ -2,6 +2,7 @@ package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.NapoleonShipMod;
 import com.awesomehippo.historicships.menu.NapoleonEngineMenu;
+import com.awesomehippo.historicships.network.FireBowShellPacket;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleTypes;
@@ -530,7 +531,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
         return true;
     }
 
-    public void serverFireBowShells(@Nullable LivingEntity shooter) {
+    public void serverFireBowShells(@Nullable LivingEntity shooter, int mode) {
         if (this.level().isClientSide() || !(this.level() instanceof ServerLevel server)) {
             return;
         }
@@ -540,6 +541,10 @@ public class NapoleonShipEntity extends StoredShipEntity {
         }
         this.entityData.set(DATA_BROADSIDE_UNTIL, (int) this.level().getGameTime() + BROADSIDE_COOLDOWN);
 
+        boolean fireLeft = mode == FireBowShellPacket.LEFT;
+        boolean fireRight = mode == FireBowShellPacket.RIGHT;
+        boolean fireFront = !fireLeft && !fireRight;
+
         float yaw = this.getYRot() * Mth.DEG_TO_RAD;
         double bowX = Mth.sin(yaw);
         double bowZ = -Mth.cos(yaw);
@@ -548,28 +553,50 @@ public class NapoleonShipEntity extends StoredShipEntity {
         double bowDist = 60.5F * U + 2.6;
         double gunY = this.getY() + 6.4F * U + 0.35;
         double[] lateral = {-2.9F * U, 2.9F * U};
-
         Vec3 shipVel = this.getDeltaMovement();
 
-        for (double lat : lateral) {
-            double ox = this.getX() + bowX * bowDist + stbdX * lat;
-            double oz = this.getZ() + bowZ * bowDist + stbdZ * lat;
-            CannonballEntity shell = new CannonballEntity(server, ox, gunY, oz, shooter);
-            shell.setSourceShip(this);
+        if (fireFront) {
+            for (double lat : lateral) {
+                double ox = this.getX() + bowX * bowDist + stbdX * lat;
+                double oz = this.getZ() + bowZ * bowDist + stbdZ * lat;
+                CannonballEntity shell = new CannonballEntity(server, ox, gunY, oz, shooter, CannonballEntity.FRONT_EXPLOSION);
+                shell.setSourceShip(this);
+                double up = 0.06 + this.random.nextDouble() * 0.03;
+                shell.setDeltaMovement(bowX * BOW_SHELL_SPEED + shipVel.x * 0.85, up + shipVel.y * 0.15, bowZ * BOW_SHELL_SPEED + shipVel.z * 0.85);
+                server.addFreshEntity(shell);
+            }
+        }
 
-            double up = 0.06 + this.random.nextDouble() * 0.03;
-            shell.setDeltaMovement(bowX * BOW_SHELL_SPEED + shipVel.x * 0.85, up + shipVel.y * 0.15, bowZ * BOW_SHELL_SPEED + shipVel.z * 0.85);
-            server.addFreshEntity(shell);
+        if (fireLeft || fireRight) {
+            double beam = HALF_BEAM + 0.9;
+            double stationStep = 5.0 * U;
+            int s = fireLeft ? -1 : 1;
+            for (int g = -4; g <= 4; g++) {
+                for (int deck = 0; deck < 2; deck++) {
+                    double ox = this.getX() + stbdX * beam * s + bowX * g * stationStep;
+                    double oy = this.getY() + (0.95 + deck * 0.55) * (MODEL_SCALE / 2.75F);
+                    double oz = this.getZ() + stbdZ * beam * s + bowZ * g * stationStep;
+                    CannonballEntity shell = new CannonballEntity(server, ox, oy, oz, shooter, CannonballEntity.SIDE_EXPLOSION);
+                    shell.setSourceShip(this);
+                    double up = 0.06 + this.random.nextDouble() * 0.03;
+                    shell.setDeltaMovement(stbdX * s * BOW_SHELL_SPEED + shipVel.x * 0.85, up + shipVel.y * 0.15, stbdZ * s * BOW_SHELL_SPEED + shipVel.z * 0.85);
+                    server.addFreshEntity(shell);
+                }
+            }
         }
 
         server.playSound(null, this.getX(), gunY, this.getZ(), SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, SoundSource.NEUTRAL, 1.15F, 0.72F + this.random.nextFloat() * 0.08F);
-        this.serverGunSmoke(server, bowX, bowZ, stbdX, stbdZ, gunY, bowDist, lateral);
+        this.serverGunSmoke(server, bowX, bowZ, stbdX, stbdZ, gunY, bowDist, lateral, mode);
     }
 
-    private void serverGunSmoke(ServerLevel server, double bowX, double bowZ, double stbdX, double stbdZ, double gunY, double bowDist, double[] lateral) {
-        double beam = HALF_BEAM;
-        double stationStep = 5.0 * U;
-        for (int s = -1; s <= 1; s += 2) {
+    private void serverGunSmoke(ServerLevel server, double bowX, double bowZ, double stbdX, double stbdZ, double gunY, double bowDist, double[] lateral, int mode) {
+        boolean fireLeft = mode == FireBowShellPacket.LEFT;
+        boolean fireRight = mode == FireBowShellPacket.RIGHT;
+        boolean fireFront = !fireLeft && !fireRight;
+        if (fireLeft || fireRight) {
+            double beam = HALF_BEAM;
+            double stationStep = 5.0 * U;
+            int s = fireLeft ? -1 : 1;
             for (int g = -4; g <= 4; g++) {
                 for (int deck = 0; deck < 2; deck++) {
                     double ox = this.getX() + stbdX * beam * s + bowX * g * stationStep;
@@ -580,11 +607,13 @@ public class NapoleonShipEntity extends StoredShipEntity {
                 }
             }
         }
-        for (double lat : lateral) {
-            double ox = this.getX() + bowX * (bowDist + 0.9) + stbdX * lat;
-            double oz = this.getZ() + bowZ * (bowDist + 0.9) + stbdZ * lat;
-            server.sendParticles(ParticleTypes.SMOKE, ox, gunY, oz, 6, 0.10, 0.08, 0.10, 0.04);
-            server.sendParticles(ParticleTypes.FLAME, ox, gunY, oz, 2, 0.04, 0.04, 0.04, 0.01);
+        if (fireFront) {
+            for (double lat : lateral) {
+                double ox = this.getX() + bowX * (bowDist + 0.9) + stbdX * lat;
+                double oz = this.getZ() + bowZ * (bowDist + 0.9) + stbdZ * lat;
+                server.sendParticles(ParticleTypes.SMOKE, ox, gunY, oz, 6, 0.10, 0.08, 0.10, 0.04);
+                server.sendParticles(ParticleTypes.FLAME, ox, gunY, oz, 2, 0.04, 0.04, 0.04, 0.01);
+            }
         }
     }
 

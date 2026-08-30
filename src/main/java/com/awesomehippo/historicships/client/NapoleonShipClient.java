@@ -164,9 +164,19 @@ public class NapoleonShipClient {
             if (!napoleon.isConductor(player)) {
                 return;
             }
-            if (NapoleonShipKeys.FIRE_ALL.consumeClick()) {
+            if (NapoleonShipKeys.FIRE_FRONT.consumeClick()) {
                 if (napoleon.tryFireAll()) {
-                    ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId()));
+                    ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.FRONT));
+                }
+            }
+            if (NapoleonShipKeys.FIRE_LEFT.consumeClick()) {
+                if (napoleon.tryFireAll()) {
+                    ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.LEFT));
+                }
+            }
+            if (NapoleonShipKeys.FIRE_RIGHT.consumeClick()) {
+                if (napoleon.tryFireAll()) {
+                    ClientPacketDistributor.sendToServer(new FireBowShellPacket(napoleon.getId(), FireBowShellPacket.RIGHT));
                 }
             }
             if (NapoleonShipKeys.TOGGLE_SAILS.consumeClick()) {
@@ -178,7 +188,7 @@ public class NapoleonShipClient {
             if (!quin.isConductor(player)) {
                 return;
             }
-            if (NapoleonShipKeys.FIRE_ALL.consumeClick()) {
+            if (NapoleonShipKeys.FIRE_FRONT.consumeClick()) {
                 if (quin.tryFireTower()) {
                     ClientPacketDistributor.sendToServer(new FireTowerStonePacket(quin.getId()));
                 }
@@ -316,7 +326,7 @@ public class NapoleonShipClient {
     }
 
     private void drawQuinqueremePanel(GuiGraphicsExtractor g, Font font, int sw, QuinqueremeEntity ship) {
-        String kFire = NapoleonShipKeys.FIRE_ALL.getTranslatedKeyMessage().getString();
+        String kFire = NapoleonShipKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
         String tower = ship.getTowerCooldown() > 0
                 ? tr("gui.historicships.hud.weapon_wait", kFire, ship.getTowerCooldown() / 20 + 1)
                 : tr("gui.historicships.hud.weapon_ready", kFire);
@@ -331,13 +341,16 @@ public class NapoleonShipClient {
     }
 
     private void drawConductorPanel(GuiGraphicsExtractor g, Font font, int sw, NapoleonShipEntity ship) {
-        String kFire = NapoleonShipKeys.FIRE_ALL.getTranslatedKeyMessage().getString();
+        String kFire = NapoleonShipKeys.FIRE_FRONT.getTranslatedKeyMessage().getString();
+        String kLeft = NapoleonShipKeys.FIRE_LEFT.getTranslatedKeyMessage().getString();
+        String kRight = NapoleonShipKeys.FIRE_RIGHT.getTranslatedKeyMessage().getString();
+        String kGuns = kFire + " / " + kLeft + " / " + kRight;
         String kSail = NapoleonShipKeys.TOGGLE_SAILS.getTranslatedKeyMessage().getString();
         String kEngine = NapoleonShipKeys.OPEN_ENGINE.getTranslatedKeyMessage().getString();
 
         String guns = ship.getBroadsideCooldown() > 0
-                ? tr("gui.historicships.hud.weapon_wait", kFire, ship.getBroadsideCooldown() / 20 + 1)
-                : tr("gui.historicships.hud.weapon_ready", kFire);
+                ? tr("gui.historicships.hud.weapon_wait", kGuns, ship.getBroadsideCooldown() / 20 + 1)
+                : tr("gui.historicships.hud.weapon_ready", kGuns);
 
         String sails = tr(ship.areSailsFurled() ? "gui.historicships.hud.sails_furled" : "gui.historicships.hud.sails_open", kSail);
         int crew = ShipAnimalCargo.countPlayers(ship);

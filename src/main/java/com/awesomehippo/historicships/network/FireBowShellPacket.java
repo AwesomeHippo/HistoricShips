@@ -10,9 +10,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record FireBowShellPacket(int shipId) implements CustomPacketPayload {
+public record FireBowShellPacket(int shipId, int mode) implements CustomPacketPayload {
+    public static final int FRONT = 0;
+    public static final int LEFT = 1;
+    public static final int RIGHT = 2;
     public static final Type<FireBowShellPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath("historicships", "fire_bow_shell"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, FireBowShellPacket> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, FireBowShellPacket::shipId, FireBowShellPacket::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, FireBowShellPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, FireBowShellPacket::shipId,
+            ByteBufCodecs.VAR_INT, FireBowShellPacket::mode,
+            FireBowShellPacket::new);
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -31,7 +37,7 @@ public record FireBowShellPacket(int shipId) implements CustomPacketPayload {
             if (!ship.isConductor(player)) {
                 return;
             }
-            ship.serverFireBowShells(player);
+            ship.serverFireBowShells(player, packet.mode());
         });
     }
 }
