@@ -262,9 +262,9 @@ public class NapoleonShipClient {
         }
         if (vehicle instanceof DrakkarEntity ship) {
             if (ship.isConductor(player)) {
-                drawOarShipPanel(g, font, sw, tr("entity.historicships.drakkar"), ship, ship.getPassengers().size(), DrakkarEntity.MAX_PASSENGERS, -1, 0);
+                drawOarShipPanel(g, font, sw, tr("entity.historicships.drakkar"), ship, ShipAnimalCargo.countPlayers(ship), DrakkarEntity.MAX_PASSENGERS, ship.getAnimalCount(), DrakkarEntity.MAX_ANIMALS);
             } else {
-                drawPassengerPanel(g, font, sw, ship, formatSpeedLine(ship, oarSpeeding(ship)), ship.getPassengers().size(), DrakkarEntity.MAX_PASSENGERS, -1, 0);
+                drawPassengerPanel(g, font, sw, ship, formatSpeedLine(ship, oarSpeeding(ship)), ShipAnimalCargo.countPlayers(ship), DrakkarEntity.MAX_PASSENGERS, ship.getAnimalCount(), DrakkarEntity.MAX_ANIMALS);
             }
             return;
         }

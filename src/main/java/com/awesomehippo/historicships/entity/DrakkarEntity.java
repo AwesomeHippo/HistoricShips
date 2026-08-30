@@ -10,10 +10,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -23,6 +26,7 @@ public class DrakkarEntity extends OarShipEntity {
     public static final float MODEL_SCALE = 2.40F;
     public static final int MAX_PASSENGERS = 4;
     public static final int CARGO_ROWS = 3;
+    public static final int MAX_ANIMALS = 2;
     public static final int MAX_HULL = 40;
     private static final float U = MODEL_SCALE / 16.0F;
     private static final ShipHull HULL = ShipHull.ofModel(U,
@@ -30,6 +34,11 @@ public class DrakkarEntity extends OarShipEntity {
             -30.5F, 6.55F,
             30.5F, 6.55F,
             37.2F, 2.80F);
+
+    private static final float[][] CARGO_XZ = {
+        {-22.0F, -2.6F},
+        {-22.0F, 2.6F},
+    };
 
     private static final EntityDataAccessor<Byte> DATA_SAIL_STRIPE = SynchedEntityData.defineId(DrakkarEntity.class, EntityDataSerializers.BYTE);
 
@@ -112,7 +121,62 @@ public class DrakkarEntity extends OarShipEntity {
             }
             return InteractionResult.SUCCESS;
         }
+        if (stack.is(Items.LEAD)) {
+            if (player.isSecondaryUseActive()) {
+                if (ShipAnimalCargo.tryUnloadAnimals(player, this)) {
+                    return InteractionResult.SUCCESS;
+                }
+            } else if (ShipAnimalCargo.tryBoardLeashed(player, this, MAX_ANIMALS)) {
+                return InteractionResult.SUCCESS;
+            }
+        }
         return super.interact(player, hand, hit);
+    }
+
+    @Override
+    protected boolean canAddPassenger(Entity passenger) {
+        if (passenger instanceof Player) {
+            return ShipAnimalCargo.countPlayers(this) < MAX_PASSENGERS;
+        }
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            return ShipAnimalCargo.countAnimals(this) < MAX_ANIMALS;
+        }
+        return false;
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        float seatY = this.stats().modelDeckY * this.stats().u + this.stats().seatYPad;
+        float modelX;
+        float modelZ;
+        if (ShipAnimalCargo.isCargoAnimal(passenger)) {
+            int index = ShipAnimalCargo.animalIndex(this, passenger);
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= CARGO_XZ.length) {
+                index = CARGO_XZ.length - 1;
+            }
+            modelX = CARGO_XZ[index][0];
+            modelZ = CARGO_XZ[index][1];
+            seatY -= 0.10F;
+        } else {
+            int index = ShipAnimalCargo.playerIndex(this, passenger);
+            float[][] seats = this.stats().seatXz;
+            if (index < 0) {
+                index = 0;
+            }
+            if (index >= seats.length) {
+                index = seats.length - 1;
+            }
+            modelX = seats[index][0];
+            modelZ = seats[index][1];
+        }
+        return ShipAnimalCargo.seatOffset(this.getYRot(), modelX, modelZ, seatY, this.stats().u);
+    }
+
+    public int getAnimalCount() {
+        return ShipAnimalCargo.countAnimals(this);
     }
 
     @Override

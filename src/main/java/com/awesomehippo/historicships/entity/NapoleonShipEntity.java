@@ -78,10 +78,10 @@ public class NapoleonShipEntity extends StoredShipEntity {
         {-34.0F, 0.0F},
     };
     private static final float[][] CARGO_XZ = {
-        {8.0F, 0.0F},
+        {22.0F, 0.0F},
         {0.0F, -3.5F},
-        {0.0F, 3.5F},
-        {-12.0F, 0.0F},
+        {-46.0F, -4.0F},
+        {-46.0F, 4.0F},
     };
     private float deltaRotation;
     private float steerSmoothed;
@@ -283,6 +283,9 @@ public class NapoleonShipEntity extends StoredShipEntity {
             modelX = CARGO_XZ[index][0];
             modelZ = CARGO_XZ[index][1];
             seatY -= 0.15F;
+            if (index >= 2) {
+                seatY += 4.9F * U;
+            }
         } else {
             int index = ShipAnimalCargo.playerIndex(this, passenger);
             if (index < 0) {

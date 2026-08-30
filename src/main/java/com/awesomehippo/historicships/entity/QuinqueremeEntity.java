@@ -53,10 +53,10 @@ public class QuinqueremeEntity extends OarShipEntity {
     private int sailPaintVersion;
 
     private static final float[][] CARGO_XZ = {
-        {6.0F, 0.0F},
+        {16.0F, 0.0F},
         {-2.0F, -2.2F},
         {-2.0F, 2.2F},
-        {-14.0F, 0.0F},
+        {-30.0F, 0.0F},
     };
 
     private static final float RAM_X0 = 56.2F;
