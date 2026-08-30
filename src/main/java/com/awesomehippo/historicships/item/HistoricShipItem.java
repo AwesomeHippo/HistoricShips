@@ -66,7 +66,7 @@ public abstract class HistoricShipItem extends Item {
                 return InteractionResult.FAIL;
             }
             Entity boat = createShip(level, hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
-            boat.setYRot(player.getYRot());
+            boat.setYRot(player.getYRot() + 180.0F);
             if (!level.noCollision(boat, boat.getBoundingBox())) {
                 return InteractionResult.FAIL;
             }
