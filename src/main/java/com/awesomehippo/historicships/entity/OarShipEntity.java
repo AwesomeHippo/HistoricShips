@@ -4,6 +4,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -197,6 +198,9 @@ public abstract class OarShipEntity extends StoredShipEntity {
 
         float step = (this.stats().rowStepBase + this.stats().rowStepHard * this.hardAmount) * this.rowIntensity;
         this.rowPhase = (this.rowPhase + step) % Mth.TWO_PI;
+        if (this.isInWater() && this.serverMovingForward() && this.tickCount % 16 == 0) {
+            this.playSound(SoundEvents.BOAT_PADDLE_WATER, 1.0F, 0.75F + this.random.nextFloat() * 0.2F);
+        }
 
         this.entityData.set(DATA_ROW_PHASE, this.rowPhase);
         this.entityData.set(DATA_ROW_INTENSITY, this.rowIntensity);
@@ -209,6 +213,10 @@ public abstract class OarShipEntity extends StoredShipEntity {
             return input.sprint() && input.forward();
         }
         return false;
+    }
+
+    private boolean serverMovingForward() {
+        return this.getControllingPassenger() instanceof ServerPlayer player && player.getLastClientInput().forward();
     }
 
     private void syncRowingFromData() {

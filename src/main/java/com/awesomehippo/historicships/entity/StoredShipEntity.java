@@ -33,6 +33,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -390,6 +391,13 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         }
         this.setBoundingBox(this.makeBoundingBox());
         this.resolveHullCollisions();
+        if (!this.level().isClientSide() && this.serverHasMoveInput() && this.random.nextInt(40) == 0) {
+            this.playSound(SoundEvents.WOOD_STEP, 0.8F, 0.55F + this.random.nextFloat() * 0.2F);
+        }
+    }
+
+    private boolean serverHasMoveInput() {
+        return this.getControllingPassenger() instanceof ServerPlayer player && (player.getLastClientInput().forward() || player.getLastClientInput().backward());
     }
 
     private void trackRamVelocity() {
