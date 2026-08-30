@@ -62,6 +62,9 @@ public abstract class HistoricShipItem extends Item {
         }
 
         if (hit.getType() == HitResult.Type.BLOCK) {
+            if (player.isUnderWater()) { // prevent the ship being placed under water..
+                return InteractionResult.FAIL;
+            }
             Entity boat = createShip(level, hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
             boat.setYRot(player.getYRot());
             if (!level.noCollision(boat, boat.getBoundingBox())) {
