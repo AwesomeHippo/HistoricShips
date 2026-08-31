@@ -31,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
@@ -92,11 +93,13 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
     private @Nullable LivingEntity sinkingBreaker;
     private int outOfWaterTicks;
     private @Nullable ShipHull defaultHull;
+    private final InterpolationHandler interpolation = new InterpolationHandler(this, 3);
 
     protected StoredShipEntity(EntityType<?> type, Level level) {
         super(type, level);
         this.itemStacks = NonNullList.withSize(this.cargoSlotCount(), ItemStack.EMPTY);
         this.hull = this.getMaxHull();
+        this.setRequiresPrecisePosition(true);
     }
 
     public void setOwner(@Nullable Player player) {
@@ -415,29 +418,39 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         return new Vec3(Mth.sin(aimYaw) * horiz, -Mth.sin(pitchRad), -Mth.cos(aimYaw) * horiz);
     }
 
-    protected void syncShipPosition() {
-        if (this.isClientAuthoritative()) {
-            this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
+    @Override
+    public InterpolationHandler getInterpolation() {
+        return this.interpolation;
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 delta) {
+        if (type == MoverType.PLAYER) {
+            this.setPos(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z);
+            return;
         }
+        super.move(type, delta);
     }
 
     protected void tickMovement() {
         this.trackRamVelocity();
-        if (this.isSinking()) {
-            this.applySinkMotion();
-            this.move(MoverType.SELF, this.getDeltaMovement());
-        } else if (this.isLocalInstanceAuthoritative()) {
-            this.updateWaterContact();
-            this.applyBuoyancy();
-            if (this.level().isClientSide()) {
-                this.controlShip();
+        this.interpolation.interpolate();
+        if (this.isLocalInstanceAuthoritative()) {
+            if (this.isSinking()) {
+                this.applySinkMotion();
+            } else {
+                this.updateWaterContact();
+                this.applyBuoyancy();
+                if (this.level().isClientSide()) {
+                    this.controlShip();
+                }
             }
             this.move(MoverType.SELF, this.getDeltaMovement());
+            this.resolveHullCollisions();
         } else {
             this.setDeltaMovement(Vec3.ZERO);
         }
         this.setBoundingBox(this.makeBoundingBox());
-        this.resolveHullCollisions();
         if (!this.level().isClientSide() && this.serverHasMoveInput() && this.random.nextInt(40) == 0) {
             this.playSound(SoundEvents.WOOD_STEP, 0.8F, 0.55F + this.random.nextFloat() * 0.2F);
         }

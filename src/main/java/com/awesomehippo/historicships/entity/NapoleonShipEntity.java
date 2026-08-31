@@ -306,7 +306,6 @@ public class NapoleonShipEntity extends StoredShipEntity {
     @Override
     public void tick() {
         super.tick();
-        this.syncShipPosition();
         this.helmAngleO = this.helmAngle;
 
         if (!this.level().isClientSide()) {

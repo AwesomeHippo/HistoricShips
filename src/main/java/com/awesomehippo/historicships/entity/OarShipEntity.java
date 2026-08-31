@@ -156,7 +156,6 @@ public abstract class OarShipEntity extends StoredShipEntity {
     @Override
     public void tick() {
         super.tick();
-        this.syncShipPosition();
 
         double animSpeed = 0.0D;
         if (this.animPosInit) {
