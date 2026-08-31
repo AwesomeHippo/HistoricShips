@@ -41,7 +41,13 @@ public class QuinqueremeRenderer extends EntityRenderer<QuinqueremeEntity, OarSh
         if (state.sailPaint != null) {
             submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(state.sailPaint), (pose, buffer) -> {
                 this.paintModel.setupAnim(state);
-                SailPaintMesh.emit(pose, buffer, this.paintModel, state.lightCoords);
+                SailPaintMesh.emit(pose, buffer, this.paintModel, state.lightCoords, false);
+            });
+        }
+        if (state.frontSailPaint != null) {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(state.frontSailPaint), (pose, buffer) -> {
+                this.paintModel.setupAnim(state);
+                SailPaintMesh.emit(pose, buffer, this.paintModel, state.lightCoords, true);
             });
         }
         poseStack.popPose();

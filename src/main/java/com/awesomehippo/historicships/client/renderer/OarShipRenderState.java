@@ -24,6 +24,8 @@ public class OarShipRenderState extends EntityRenderState {
     public float ramImpactRoll;
     @Nullable
     public Identifier sailPaint;
+    @Nullable
+    public Identifier frontSailPaint;
 
     public void extractFrom(OarShipEntity entity, float partialTicks) {
         this.yRot = entity.getYRot(partialTicks);
@@ -43,9 +45,11 @@ public class OarShipRenderState extends EntityRenderState {
             this.sailStripe = 0;
         }
         if (entity instanceof QuinqueremeEntity quinquereme) {
-            this.sailPaint = SailPaintTextures.get(quinquereme);
+            this.sailPaint = SailPaintTextures.get(quinquereme, false);
+            this.frontSailPaint = SailPaintTextures.get(quinquereme, true);
         } else {
             this.sailPaint = null;
+            this.frontSailPaint = null;
         }
     }
 }

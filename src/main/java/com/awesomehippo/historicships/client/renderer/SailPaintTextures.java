@@ -20,28 +20,35 @@ public final class SailPaintTextures {
     private SailPaintTextures() {}
 
     @Nullable
-    public static Identifier get(QuinqueremeEntity ship) {
-        byte[] paint = ship.getSailPaint();
+    public static Identifier get(QuinqueremeEntity ship, boolean front) {
+        byte[] paint = front ? ship.getFrontSailPaint() : ship.getSailPaint();
         if (paint == null || !SailPaint.isValid(paint)) {
             return null;
         }
-        Entry entry = BY_ENTITY.get(ship.getId());
+        int key = ship.getId() * 2 + (front ? 1 : 0);
+        Entry entry = BY_ENTITY.get(key);
         if (entry == null) {
             Identifier id = Identifier.fromNamespaceAndPath("historicships", "sail_paint/" + (nextId++));
             DynamicTexture texture = new DynamicTexture(() -> "historicships_sail_paint", SailPaint.WIDTH, SailPaint.HEIGHT, true);
             Minecraft.getInstance().getTextureManager().register(id, texture);
             entry = new Entry(id, texture);
-            BY_ENTITY.put(ship.getId(), entry);
+            BY_ENTITY.put(key, entry);
         }
-        if (entry.version != ship.getSailPaintVersion()) {
-            entry.version = ship.getSailPaintVersion();
+        int version = ship.getSailPaintVersion();
+        if (entry.version != version) {
+            entry.version = version;
             fill(entry.texture, paint);
         }
         return entry.id;
     }
 
     public static void release(int entityId) {
-        Entry entry = BY_ENTITY.remove(entityId);
+        releaseKey(entityId * 2);
+        releaseKey(entityId * 2 + 1);
+    }
+
+    private static void releaseKey(int key) {
+        Entry entry = BY_ENTITY.remove(key);
         if (entry != null) {
             Minecraft.getInstance().getTextureManager().release(entry.id);
         }

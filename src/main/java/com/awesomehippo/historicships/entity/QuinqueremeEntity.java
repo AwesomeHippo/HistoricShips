@@ -51,6 +51,8 @@ public class QuinqueremeEntity extends OarShipEntity {
     @Nullable
     private byte[] sailPaint;
     private int sailPaintVersion;
+    @Nullable
+    private byte[] frontSailPaint;
 
     private static final float[][] CARGO_XZ = {
         {16.0F, 0.0F},
@@ -142,6 +144,16 @@ public class QuinqueremeEntity extends OarShipEntity {
         this.sailPaintVersion++;
     }
 
+    @Nullable
+    public byte[] getFrontSailPaint() {
+        return this.frontSailPaint;
+    }
+
+    public void setFrontSailPaintData(@Nullable byte[] pixels) {
+        this.frontSailPaint = pixels;
+        this.sailPaintVersion++;
+    }
+
     public boolean canEditSail(Player player) {
         if (this.isRemoved() || this.isSinking() || !this.isOwner(player)) {
             return false;
@@ -150,11 +162,14 @@ public class QuinqueremeEntity extends OarShipEntity {
         return player.distanceToSqr(this) <= reach * reach;
     }
 
-    public void applySailPaint(byte[] pixels) {
+    public void applySailPaint(int sail, byte[] pixels) {
         byte[] stored = pixels.length == 0 ? null : pixels.clone();
-        this.setSailPaintData(stored);
-        PacketDistributor.sendToPlayersTrackingEntity(this, new SailPaintPacket(this.getId(), stored == null ? new byte[0] : stored));
-        this.level().playSound(null, this.getX(), this.getY() + 2.0, this.getZ(), SoundEvents.DYE_USE, SoundSource.NEUTRAL, 1.0F, 1.0F);
+        if (sail == SailPaintPacket.FRONT) {
+            this.setFrontSailPaintData(stored);
+        } else {
+            this.setSailPaintData(stored);
+        }
+        PacketDistributor.sendToPlayersTrackingEntity(this, new SailPaintPacket(this.getId(), sail, stored == null ? new byte[0] : stored));
     }
 
     @Override
@@ -162,12 +177,16 @@ public class QuinqueremeEntity extends OarShipEntity {
         if (this.sailPaint != null) {
             stack.set(HistoricShips.SHIP_SAIL_PAINT.get(), new SailPaint.Data(this.sailPaint));
         }
+        if (this.frontSailPaint != null) {
+            stack.set(HistoricShips.SHIP_FRONT_SAIL_PAINT.get(), new SailPaint.Data(this.frontSailPaint));
+        }
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         this.sailPaint = SailPaint.fromInts(input.getIntArray("SailPaint").orElse(null));
+        this.frontSailPaint = SailPaint.fromInts(input.getIntArray("FrontSailPaint").orElse(null));
     }
 
     @Override
@@ -175,6 +194,9 @@ public class QuinqueremeEntity extends OarShipEntity {
         super.addAdditionalSaveData(output);
         if (this.sailPaint != null) {
             output.putIntArray("SailPaint", SailPaint.toInts(this.sailPaint));
+        }
+        if (this.frontSailPaint != null) {
+            output.putIntArray("FrontSailPaint", SailPaint.toInts(this.frontSailPaint));
         }
     }
 

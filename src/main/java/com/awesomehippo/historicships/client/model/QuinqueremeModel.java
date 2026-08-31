@@ -56,7 +56,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
     private static final int OAR_PAIRS = 16;
     private static final float REST_PITCH = 0.62F;
     public static final float SAIL_MAX_BELLY = 6.5F;
-    private static final float ART_SAIL_MAX_BELLY = 3.8F;
+    public static final float ART_SAIL_MAX_BELLY = 3.8F;
 
     public static final float MAST_BASE_Y = 5.55F;
     public static final float YARD_Y = 23.0F;
@@ -65,6 +65,15 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
     public static final float SAIL_HEIGHT = 17.5F;
     public static final float SAIL_HALF_HEAD = 14.0F;
     public static final float SAIL_HALF_FOOT = 13.0F;
+    public static final float ART_BASE_X = 55.90F;
+    public static final float ART_BASE_Y = 7.6F;
+    public static final float ART_Z_ROT = -0.45F;
+    public static final float ART_SAIL_Y = 18.5F;
+    public static final float ART_SAIL_X_OFF = 0.55F;
+    public static final float ART_SAIL_HEIGHT = 8.2F;
+    public static final float ART_SAIL_HALF_HEAD = 7.2F;
+    public static final float ART_SAIL_HALF_FOOT = 6.5F;
+    public static final float ART_SAIL_THICK = 1.05F;
     private static final float LINE = 0.30F;
     private static final float OAR_X0 = -32.0F;
     private static final float OAR_PITCH = 4.0F;
@@ -79,6 +88,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
     private final ModelPart sailCloth;
     private final ModelPart[][] sailCells;
     private final ModelPart artSailRoot;
+    private final ModelPart artSailCloth;
     private final ModelPart[][] artSailCells;
 
     public QuinqueremeModel(ModelPart root) {
@@ -96,6 +106,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         this.sailCells = SquareSail.resolveCells(this.sailRoot);
         ModelPart artemon = body.getChild("artemon");
         this.artSailRoot = artemon.getChild("sail_artemon");
+        this.artSailCloth = this.artSailRoot.getChild("cloth");
         this.artSailCells = SquareSail.resolveCells(this.artSailRoot);
     }
 
@@ -213,28 +224,21 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         body.addOrReplaceChild("eye_s_pupil", CubeListBuilder.create().texOffs(BLACK, BLACK_V).addBox(eyeX + 0.55F, eyeY + 0.35F, hb1 - 0.05F, 0.85F, 0.85F, 0.28F, d0), PartPose.ZERO);
         body.addOrReplaceChild("eye_s_lid", CubeListBuilder.create().texOffs(GOLD, GOLD_V).addBox(eyeX - 0.15F, eyeY + 1.40F, hb1 - 0.10F, 2.3F, 0.28F, 0.28F, d0), PartPose.ZERO);
 
-        final float artBaseX = stemX + 0.35F;
-        final float artBaseY = deckY + 2.4F;
-        final float artSparH = 18.5F;
-        final float artSailH = 8.2F;
-        final float artHalfH = 7.2F;
-        final float artHalfF = 6.5F;
+        PartDefinition artemon = body.addOrReplaceChild("artemon", CubeListBuilder.create(), PartPose.offsetAndRotation(ART_BASE_X, ART_BASE_Y, 0.0F, 0.0F, 0.0F, ART_Z_ROT));
 
-        PartDefinition artemon = body.addOrReplaceChild("artemon", CubeListBuilder.create(), PartPose.offsetAndRotation(artBaseX, artBaseY, 0.0F, 0.0F, 0.0F, -0.45F));
+        artemon.addOrReplaceChild("spar", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.70F, 0.0F, -0.70F, 1.40F, ART_SAIL_Y, 1.40F, d0), PartPose.ZERO);
+        artemon.addOrReplaceChild("spar_mid", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, ART_SAIL_Y * 0.35F, -0.55F, 1.10F, ART_SAIL_Y * 0.40F, 1.10F, d0), PartPose.ZERO);
+        artemon.addOrReplaceChild("spar_tip", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.48F, ART_SAIL_Y - 1.2F, -0.48F, 0.96F, 1.5F, 0.96F, d0), PartPose.ZERO);
 
-        artemon.addOrReplaceChild("spar", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.70F, 0.0F, -0.70F, 1.40F, artSparH, 1.40F, d0), PartPose.ZERO);
-        artemon.addOrReplaceChild("spar_mid", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, artSparH * 0.35F, -0.55F, 1.10F, artSparH * 0.40F, 1.10F, d0), PartPose.ZERO);
-        artemon.addOrReplaceChild("spar_tip", CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.48F, artSparH - 1.2F, -0.48F, 0.96F, 1.5F, 0.96F, d0), PartPose.ZERO);
-
-        final float artYardHalf = artHalfH + (artHalfH * 2.0F / SquareSail.COLS) * SquareSail.GRID_OVERLAP + 0.25F;
+        final float artYardHalf = ART_SAIL_HALF_HEAD + (ART_SAIL_HALF_HEAD * 2.0F / SquareSail.COLS) * SquareSail.GRID_OVERLAP + 0.25F;
         final float artYardSeg = 8.0F;
         int ayi = 0;
         for (float z = -artYardHalf; z < artYardHalf - 0.01F; z += artYardSeg) {
             float len = Math.min(artYardSeg, artYardHalf - z);
-            artemon.addOrReplaceChild("yard_" + (ayi++), CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, artSparH - 0.55F, z, 1.10F, 1.10F, len, d0), PartPose.ZERO);
+            artemon.addOrReplaceChild("yard_" + (ayi++), CubeListBuilder.create().texOffs(MAST, MAST_V).addBox(-0.55F, ART_SAIL_Y - 0.55F, z, 1.10F, 1.10F, len, d0), PartPose.ZERO);
         }
 
-        SquareSail.addMapped(artemon, "sail_artemon", artSparH, 0.55F, artSailH, artHalfH, artHalfF, 1.05F, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0, false);
+        SquareSail.addMapped(artemon, "sail_artemon", ART_SAIL_Y, ART_SAIL_X_OFF, ART_SAIL_HEIGHT, ART_SAIL_HALF_HEAD, ART_SAIL_HALF_FOOT, ART_SAIL_THICK, SAIL, SAIL_V, 0, 0, MAST, MAST_V, d0, false);
 
         final float stemPeakX = stemX - 0.4F;
         final float stemPeakY = deckY + 9.3F;
@@ -384,6 +388,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         this.sailCloth.visible = state.sailPaint == null;
         SquareSail.animate(this.sailRoot, this.sailCells, age, fill, SAIL_MAX_BELLY, 0.35F);
 
+        this.artSailCloth.visible = state.frontSailPaint == null;
         SquareSail.animate(this.artSailRoot, this.artSailCells, age, fill, ART_SAIL_MAX_BELLY, 1.17F, 1.45F, 1.35F, 0.28F);
     }
 }

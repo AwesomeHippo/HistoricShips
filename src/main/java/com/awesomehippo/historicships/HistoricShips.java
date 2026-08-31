@@ -68,6 +68,7 @@ public class HistoricShips {
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SHIP_HULL = DATA_COMPONENTS.registerComponentType("hull", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<SailPaint.Data>> SHIP_SAIL_PAINT = DATA_COMPONENTS.registerComponentType("sail_paint", builder -> builder.persistent(SailPaint.CODEC).networkSynchronized(SailPaint.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SailPaint.Data>> SHIP_FRONT_SAIL_PAINT = DATA_COMPONENTS.registerComponentType("front_sail_paint", builder -> builder.persistent(SailPaint.CODEC).networkSynchronized(SailPaint.STREAM_CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> SHIP_SAIL_STRIPE = DATA_COMPONENTS.registerComponentType("sail_stripe", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     public static final DeferredHolder<EntityType<?>, EntityType<NapoleonShipEntity>> NAPOLEON_SHIP_ENTITY = ENTITIES.registerEntityType("napoleon_ship", NapoleonShipEntity::new, MobCategory.MISC, builder -> builder.sized(24.0F, 22.0F).clientTrackingRange(16).updateInterval(3).fireImmune());
@@ -126,8 +127,13 @@ public class HistoricShips {
     }
 
     private void onStartTracking(PlayerEvent.StartTracking event) {
-        if (event.getTarget() instanceof QuinqueremeEntity ship && event.getEntity() instanceof ServerPlayer player && ship.getSailPaint() != null) {
-            PacketDistributor.sendToPlayer(player, new SailPaintPacket(ship.getId(), ship.getSailPaint()));
+        if (event.getTarget() instanceof QuinqueremeEntity ship && event.getEntity() instanceof ServerPlayer player) {
+            if (ship.getSailPaint() != null) {
+                PacketDistributor.sendToPlayer(player, new SailPaintPacket(ship.getId(), SailPaintPacket.MAIN, ship.getSailPaint()));
+            }
+            if (ship.getFrontSailPaint() != null) {
+                PacketDistributor.sendToPlayer(player, new SailPaintPacket(ship.getId(), SailPaintPacket.FRONT, ship.getFrontSailPaint()));
+            }
         }
     }
 

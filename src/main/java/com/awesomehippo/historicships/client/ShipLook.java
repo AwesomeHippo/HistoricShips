@@ -21,10 +21,6 @@ public final class ShipLook {
 
     private static boolean on;
     private static CameraType savedCam;
-    private static float savedYaw;
-    private static float savedPitch;
-    private static float camYaw;
-    private static float camPitch;
     private static float lookFov;
     private static float smoothedFov;
 
@@ -36,7 +32,7 @@ public final class ShipLook {
         boolean onShip = player != null && mc.level != null && player.getVehicle() instanceof StoredShipEntity;
         if (!onShip) {
             if (on) {
-                stop(mc, player);
+                stop(mc);
             }
             HistoricShipsKeys.LOOK_AROUND.consumeClick();
             return;
@@ -47,9 +43,9 @@ public final class ShipLook {
         }
         if (HistoricShipsKeys.LOOK_AROUND.consumeClick()) {
             if (on) {
-                stop(mc, player);
+                stop(mc);
             } else {
-                start(mc, player);
+                start(mc);
             }
         }
         if (on && mc.options.getCameraType().isFirstPerson()) {
@@ -63,21 +59,6 @@ public final class ShipLook {
         }
         lookFov = Mth.clamp(lookFov - (float) event.getScrollDeltaY() * FOV_STEP, FOV_MIN, FOV_MAX);
         event.setCanceled(true);
-    }
-
-    public static void cameraAngles(ViewportEvent.ComputeCameraAngles event) {
-        if (!on) {
-            return;
-        }
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player == null || !(player.getVehicle() instanceof StoredShipEntity)) {
-            return;
-        }
-        camYaw += Mth.wrapDegrees(player.getYRot() - savedYaw);
-        camPitch = Mth.clamp(camPitch + (player.getXRot() - savedPitch), -90.0F, 90.0F);
-        freeze(player);
-        event.setYaw(camYaw);
-        event.setPitch(camPitch);
     }
 
     public static void cameraFov(ViewportEvent.ComputeFov event) {
@@ -115,39 +96,20 @@ public final class ShipLook {
         }
     }
 
-    private static void start(Minecraft mc, LocalPlayer player) {
+    private static void start(Minecraft mc) {
         on = true;
         savedCam = mc.options.getCameraType();
-        savedYaw = player.getYRot();
-        savedPitch = player.getXRot();
-        camYaw = savedYaw;
-        camPitch = savedPitch;
         lookFov = 0.0F;
         smoothedFov = 0.0F;
-        freeze(player);
         if (savedCam.isFirstPerson()) {
             mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
     }
 
-    private static void stop(Minecraft mc, LocalPlayer player) {
-        if (player != null) {
-            freeze(player);
-        }
+    private static void stop(Minecraft mc) {
         mc.options.setCameraType(savedCam);
         lookFov = 0.0F;
         smoothedFov = 0.0F;
         on = false;
-    }
-
-    private static void freeze(LocalPlayer player) {
-        player.setYRot(savedYaw);
-        player.yRotO = savedYaw;
-        player.setYHeadRot(savedYaw);
-        player.yHeadRotO = savedYaw;
-        player.yBodyRot = savedYaw;
-        player.yBodyRotO = savedYaw;
-        player.setXRot(savedPitch);
-        player.xRotO = savedPitch;
     }
 }

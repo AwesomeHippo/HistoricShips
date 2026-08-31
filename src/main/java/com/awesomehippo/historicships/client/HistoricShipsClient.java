@@ -91,7 +91,6 @@ public class HistoricShipsClient {
         NeoForge.EVENT_BUS.addListener(ShipLook::tick);
         NeoForge.EVENT_BUS.addListener(ShipLook::scroll);
         NeoForge.EVENT_BUS.addListener(ShipLook::cameraFov);
-        NeoForge.EVENT_BUS.addListener(ShipLook::cameraAngles);
         NeoForge.EVENT_BUS.addListener(ShipLook::cameraDistance);
         NeoForge.EVENT_BUS.addListener(BowTrajectoryPreview::render);
         NeoForge.EVENT_BUS.addListener(this::onRenderGui);

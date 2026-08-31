@@ -31,6 +31,10 @@ public class QuinqueremeItem extends HistoricShipItem {
             if (paint != null && SailPaint.isValid(paint.pixels())) {
                 quinquereme.setSailPaintData(paint.pixels());
             }
+            SailPaint.Data front = stack.get(HistoricShips.SHIP_FRONT_SAIL_PAINT.get());
+            if (front != null && SailPaint.isValid(front.pixels())) {
+                quinquereme.setFrontSailPaintData(front.pixels());
+            }
         }
     }
 }

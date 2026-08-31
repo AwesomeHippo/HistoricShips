@@ -4,16 +4,23 @@ import com.awesomehippo.historicships.entity.QuinqueremeEntity;
 import com.awesomehippo.historicships.entity.SailPaint;
 import com.awesomehippo.historicships.network.SailPaintPacket;
 
+import com.mojang.blaze3d.platform.NativeImage;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.DyeColor;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 public class SailPaintScreen extends Screen {
     private static final Component TITLE = Component.translatable("gui.historicships.sail_paint.title");
@@ -54,9 +61,53 @@ public class SailPaintScreen extends Screen {
         "............#....###.##.###....#............",
         "..................#.####...................."
     };
+    private static final String[] LAUREL = {
+        "..............#..............#..............",
+        "..............####........####..............",
+        ".............####..........####.............",
+        ".......#.....###............###.....#.......",
+        ".......###.####..............####.###.......",
+        ".......##.##....................##.##.......",
+        "........####....................####........",
+        "........###......................###........",
+        ".......####......................####.......",
+        ".##...####........................####...##.",
+        "..###.#..............................#.###..",
+        "..#####..............................#####..",
+        "....##.##..........................##.##....",
+        ".....###............................###.....",
+        ".....###............................###.....",
+        "....##................................##....",
+        "....##................................##....",
+        "..#..#................................#..#..",
+        "######..##........................##..######",
+        "..##.#.###........................###.#.##..",
+        ".....####..........................####.....",
+        "......##............................##......",
+        ".......#............................#.......",
+        ".......##...##................##...##.......",
+        ".....#####..##................##..#####.....",
+        "....####.##.##................##.##.####....",
+        "......#...###.....#......#.....###...#......",
+        "............###..###....###..###............",
+        "...........########......########...........",
+        "..........###...###......###...###..........",
+        "..........#......##########......#..........",
+        "................############................",
+        "...............#####....#####..............."
+    };
 
     private final QuinqueremeEntity ship;
-    private final byte[] pixels = new byte[SailPaint.PIXELS];
+    private final byte[] mainPixels = new byte[SailPaint.PIXELS];
+    private final byte[] frontPixels = new byte[SailPaint.PIXELS];
+    private byte[] pixels = this.mainPixels;
+    private boolean front;
+
+    private Button mainTab;
+    private Button frontTab;
+    private Button eagleBtn;
+    private Button spqrBtn;
+    private Button laurelBtn;
 
     private int cell;
     private int canvasX;
@@ -79,7 +130,11 @@ public class SailPaintScreen extends Screen {
         this.ship = ship;
         byte[] current = ship.getSailPaint();
         if (SailPaint.isValid(current)) {
-            System.arraycopy(current, 0, this.pixels, 0, SailPaint.PIXELS);
+            System.arraycopy(current, 0, this.mainPixels, 0, SailPaint.PIXELS);
+        }
+        byte[] front = ship.getFrontSailPaint();
+        if (SailPaint.isValid(front)) {
+            System.arraycopy(front, 0, this.frontPixels, 0, SailPaint.PIXELS);
         }
     }
 
@@ -97,14 +152,21 @@ public class SailPaintScreen extends Screen {
         this.paletteX = this.canvasX + (canvasW - colorsW) / 2;
         this.paletteY = this.canvasY + canvasH + 6;
 
+        int tabW = 72;
+        int tabX = Math.max(2, this.canvasX - tabW - 6);
+        this.mainTab = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.main_sail"), b -> this.setFront(false)).bounds(tabX, this.canvasY, tabW, 18).build());
+        this.frontTab = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.front_sail"), b -> this.setFront(true)).bounds(tabX, this.canvasY + 22, tabW, 18).build());
+
         int stampBw = 80;
         int bw = 52;
         int gap = 4;
         int stampY = this.paletteY + 2 * (this.swatch + 2) + 6;
         int stampTotal = 2 * stampBw + gap;
         int sx = (this.width - stampTotal) / 2;
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.roman_eagle"), b -> this.stampRomanEagle()).bounds(sx, stampY, stampBw, 16).build());
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.spqr"), b -> this.stampSpqr()).bounds(sx + (stampBw + gap), stampY, stampBw, 16).build());
+        this.eagleBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.roman_eagle"), b -> this.stampRomanEagle()).bounds(sx, stampY, stampBw, 16).build());
+        this.spqrBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.spqr"), b -> this.stampSpqr()).bounds(sx + (stampBw + gap), stampY, stampBw, 16).build());
+        this.laurelBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.sail_paint.laurel"), b -> this.stampLaurel()).bounds((this.width - stampBw) / 2, stampY, stampBw, 16).build());
+        this.refreshTabs();
 
         int by = stampY + 20;
         int total = 4 * bw + 3 * gap;
@@ -132,6 +194,27 @@ public class SailPaintScreen extends Screen {
         Arrays.fill(this.pixels, (byte) 0);
         int scale = 2;
         this.stampWord("SPQR", (SailPaint.WIDTH - wordWidth("SPQR", scale)) / 2, (SailPaint.HEIGHT - 7 * scale) / 2, dye(DyeColor.RED), scale);
+    }
+
+    private void stampLaurel() {
+        Arrays.fill(this.pixels, (byte) dye(DyeColor.RED));
+        this.stampPattern(LAUREL, (SailPaint.WIDTH - LAUREL[0].length()) / 2, (SailPaint.HEIGHT - LAUREL.length) / 2, dye(DyeColor.YELLOW));
+    }
+
+    private void setFront(boolean front) {
+        this.front = front;
+        this.pixels = front ? this.frontPixels : this.mainPixels;
+        this.lastCellX = -1;
+        this.lastCellY = -1;
+        this.refreshTabs();
+    }
+
+    private void refreshTabs() {
+        this.mainTab.active = this.front;
+        this.frontTab.active = !this.front;
+        this.eagleBtn.visible = !this.front;
+        this.spqrBtn.visible = !this.front;
+        this.laurelBtn.visible = this.front;
     }
 
     private static int dye(DyeColor color) {
@@ -204,8 +287,11 @@ public class SailPaintScreen extends Screen {
 
     private void save() {
         if (!this.ship.isRemoved()) {
-            byte[] result = SailPaint.isBlank(this.pixels) ? new byte[0] : this.pixels;
-            ClientPacketDistributor.sendToServer(new SailPaintPacket(this.ship.getId(), result));
+            byte[] main = SailPaint.isBlank(this.mainPixels) ? new byte[0] : this.mainPixels;
+            byte[] front = SailPaint.isBlank(this.frontPixels) ? new byte[0] : this.frontPixels;
+            ClientPacketDistributor.sendToServer(new SailPaintPacket(this.ship.getId(), SailPaintPacket.MAIN, main));
+            ClientPacketDistributor.sendToServer(new SailPaintPacket(this.ship.getId(), SailPaintPacket.FRONT, front));
+            this.minecraft.player.playSound(SoundEvents.DYE_USE);
         }
         this.onClose();
     }
@@ -213,6 +299,58 @@ public class SailPaintScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void onFilesDrop(List<Path> files) {
+        for (Path path : files) {
+            if (this.loadImage(path)) {
+                return;
+            }
+        }
+    }
+
+    private boolean loadImage(Path path) {
+        try (NativeImage image = NativeImage.read(Files.newInputStream(path))) {
+            int w = image.getWidth();
+            int h = image.getHeight();
+            if (w < 1 || h < 1) {
+                return false;
+            }
+            for (int y = 0; y < SailPaint.HEIGHT; y++) {
+                for (int x = 0; x < SailPaint.WIDTH; x++) {
+                    int sx = Math.min(w - 1, x * w / SailPaint.WIDTH);
+                    int sy = Math.min(h - 1, y * h / SailPaint.HEIGHT);
+                    this.pixels[y * SailPaint.WIDTH + x] = (byte) nearestDye(image.getPixel(sx, sy));
+                }
+            }
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static int nearestDye(int argb) {
+        if (ARGB.alpha(argb) < 64) {
+            return 0;
+        }
+        int r = ARGB.red(argb);
+        int g = ARGB.green(argb);
+        int b = ARGB.blue(argb);
+        int best = 1;
+        int bestD = Integer.MAX_VALUE;
+        for (int i = 1; i <= SailPaint.COLORS; i++) {
+            int c = SailPaint.argb(i);
+            int dr = r - ARGB.red(c);
+            int dg = g - ARGB.green(c);
+            int db = b - ARGB.blue(c);
+            int d = dr * dr + dg * dg + db * db;
+            if (d < bestD) {
+                bestD = d;
+                best = i;
+            }
+        }
+        return best;
     }
 
     @Override

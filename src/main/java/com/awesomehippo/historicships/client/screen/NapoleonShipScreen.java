@@ -33,9 +33,10 @@ public class NapoleonShipScreen extends AbstractContainerScreen<NapoleonShipMenu
     @Override
     protected void init() {
         super.init();
-        int tabX = this.leftPos - 70;
-        this.cargoBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.tab.cargo"), b -> this.setTab(NapoleonShipMenu.TAB_CARGO)).bounds(tabX, this.topPos, 70, 20).build());
-        this.engineBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.tab.engine"), b -> this.setTab(NapoleonShipMenu.TAB_ENGINE)).bounds(tabX, this.topPos + 20, 70, 20).build());
+        int tabW = 72;
+        int tabX = this.leftPos - tabW - 6;
+        this.cargoBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.tab.cargo"), b -> this.setTab(NapoleonShipMenu.TAB_CARGO)).bounds(tabX, this.topPos, tabW, 18).build());
+        this.engineBtn = this.addRenderableWidget(Button.builder(Component.translatable("gui.historicships.tab.engine"), b -> this.setTab(NapoleonShipMenu.TAB_ENGINE)).bounds(tabX, this.topPos + 22, tabW, 18).build());
         this.refreshTabs();
     }
 

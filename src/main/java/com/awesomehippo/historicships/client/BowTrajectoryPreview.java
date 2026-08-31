@@ -30,8 +30,8 @@ public final class BowTrajectoryPreview {
     private static final double STONE_GRAVITY = 0.036;
     private static final double INERTIA = 0.99;
     private static final int MAX_TICKS = 170;
-    private static final int COLOR = 0x88FFFFFF;
-    private static final float WIDTH = 4.0F;
+    private static final int COLOR = 0xD0FFFFFF;
+    private static final float WIDTH = 5.0F;
 
     private BowTrajectoryPreview() {}
 
@@ -48,7 +48,7 @@ public final class BowTrajectoryPreview {
             return;
         }
         Vec3 cam = event.getLevelRenderState().cameraRenderState.pos;
-        event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderTypes.linesTranslucent(), (pose, buffer) -> {
+        event.getSubmitNodeCollector().submitCustomGeometry(event.getPoseStack(), RenderTypes.lines(), (pose, buffer) -> {
             for (int i = 1; i < points.size(); i++) {
                 line(buffer, pose, cam, points.get(i - 1), points.get(i));
             }
