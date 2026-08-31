@@ -1,10 +1,12 @@
 package com.awesomehippo.historicships.entity;
 
 import com.awesomehippo.historicships.HistoricShips;
+import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.network.RamHitPacket;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -41,6 +43,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -905,9 +908,15 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             return false;
         }
         this.ejectPassengers();
-        Containers.dropContents(level, this, this);
-        this.clearContent();
         ItemStack stack = this.createDropStack();
+        if (ShipsConfig.KEEP_CARGO.get()) {
+            if (!this.isEmpty()) {
+                stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.itemStacks));
+            }
+        } else {
+            Containers.dropContents(level, this, this);
+        }
+        this.clearContent();
         int pct = this.getHullPercent();
         if (pct < 100) {
             stack.set(HistoricShips.SHIP_HULL.get(), pct);
@@ -920,6 +929,13 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY() + 1.0, this.getZ(), 18, 0.7, 0.4, 0.7, 0.05);
         this.discard();
         return true;
+    }
+
+    public void loadPackedItems(ItemStack stack) {
+        ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
+        if (contents != null) {
+            contents.copyInto(this.itemStacks);
+        }
     }
 
     public boolean tryRepair(Player player, InteractionHand hand) {

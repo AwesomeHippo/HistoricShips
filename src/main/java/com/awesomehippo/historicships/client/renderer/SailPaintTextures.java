@@ -58,7 +58,8 @@ public final class SailPaintTextures {
         NativeImage image = texture.getPixels();
         for (int y = 0; y < SailPaint.HEIGHT; y++) {
             for (int x = 0; x < SailPaint.WIDTH; x++) {
-                image.setPixel(x, y, SailPaint.argb(paint[y * SailPaint.WIDTH + x]));
+                byte b = paint[y * SailPaint.WIDTH + x];
+                image.setPixel(x, y, b == 0 ? 0xFFF4E8CE : SailPaint.argb(b));
             }
         }
         texture.upload();

@@ -10,6 +10,7 @@ public final class ShipsConfig {
     public static final ModConfigSpec.BooleanValue DRAKKAR;
     public static final ModConfigSpec.BooleanValue QUINQUEREME;
     public static final ModConfigSpec.BooleanValue NAPOLEON_SHIP;
+    public static final ModConfigSpec.BooleanValue KEEP_CARGO;
     private static final ModConfigSpec SPEC;
 
     static {
@@ -18,6 +19,7 @@ public final class ShipsConfig {
         QUINQUEREME = BUILDER.define("quinquereme", true);
         NAPOLEON_SHIP = BUILDER.define("napoleon_ship", true);
         BUILDER.pop();
+        KEEP_CARGO = BUILDER.comment("Keep cargo in the ship item when you pick it up, or drop the content").define("keep_cargo", true);
         SPEC = BUILDER.build();
     }
 

@@ -75,6 +75,7 @@ public abstract class HistoricShipItem extends Item {
                     if (hull != null) {
                         ship.setHullPercent(hull);
                     }
+                    ship.loadPackedItems(stack);
                 }
                 this.applyPlaceData(stack, boat);
                 level.addFreshEntity(boat);

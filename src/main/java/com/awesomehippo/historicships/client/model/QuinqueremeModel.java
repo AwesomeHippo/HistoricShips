@@ -76,6 +76,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
     private final ModelPart[] oarsPort;
     private final ModelPart[] oarsStbd;
     private final ModelPart sailRoot;
+    private final ModelPart sailCloth;
     private final ModelPart[][] sailCells;
     private final ModelPart artSailRoot;
     private final ModelPart[][] artSailCells;
@@ -91,6 +92,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         }
         ModelPart mast = body.getChild("mast");
         this.sailRoot = mast.getChild("sail_fixed");
+        this.sailCloth = this.sailRoot.getChild("cloth");
         this.sailCells = SquareSail.resolveCells(this.sailRoot);
         ModelPart artemon = body.getChild("artemon");
         this.artSailRoot = artemon.getChild("sail_artemon");
@@ -379,6 +381,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
             ShipOars.poseOar(this.oarsStbd[i], false, phase, intensity, hard, REST_PITCH);
         }
 
+        this.sailCloth.visible = state.sailPaint == null;
         SquareSail.animate(this.sailRoot, this.sailCells, age, fill, SAIL_MAX_BELLY, 0.35F);
 
         SquareSail.animate(this.artSailRoot, this.artSailCells, age, fill, ART_SAIL_MAX_BELLY, 1.17F, 1.45F, 1.35F, 0.28F);
