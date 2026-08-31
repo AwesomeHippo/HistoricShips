@@ -526,7 +526,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     private void tickSmoothedMaxSpeed(float waterTarget) {
-        float target = this.isMarine() ? waterTarget : LAND_SPEED;
+        float target = (this.isMarine() ? waterTarget : LAND_SPEED) * this.hullSpeedMult();
         float ease = target < this.smoothedMaxSpeed ? 0.07F : 0.11F;
         this.smoothedMaxSpeed += (target - this.smoothedMaxSpeed) * ease;
     }

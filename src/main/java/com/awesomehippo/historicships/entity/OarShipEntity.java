@@ -317,7 +317,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
     }
 
     private void tickSmoothedMaxSpeed(float waterTarget) {
-        float target = this.isMarine() ? waterTarget : this.stats().landSpeed;
+        float target = (this.isMarine() ? waterTarget : this.stats().landSpeed) * this.hullSpeedMult();
         float ease = target < this.smoothedMaxSpeed ? 0.07F : 0.11F;
         this.smoothedMaxSpeed += (target - this.smoothedMaxSpeed) * ease;
     }

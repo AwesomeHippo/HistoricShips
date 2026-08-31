@@ -221,6 +221,10 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         return 2;
     }
 
+    protected float hullSpeedMult() {
+        return 0.50F + this.getHullPercent() * 0.005F;
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(DATA_HULL, this.getMaxHull());
