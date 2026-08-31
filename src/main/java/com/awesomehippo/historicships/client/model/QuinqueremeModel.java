@@ -125,7 +125,7 @@ public class QuinqueremeModel extends EntityModel<OarShipRenderState> {
         final float deckZ0 = -hb + 1.0F;
         final float deckZ = (hb - 1.0F) * 2.0F;
         final float b0 = midEnd - 0.35F;
-        addSegX(body, "deck", mid0 + 0.5F, deckY, deckZ0, b0 - (mid0 + 0.5F), 0.50F, deckZ, DECK, DECK_V, d0, 0.0F);
+        addSegX(body, "deck", mid0, deckY, deckZ0, b0 - mid0, 0.50F, deckZ, DECK, DECK_V, d0, 0.0F);
 
         addSegX(body, "rail_p", mid0, deckY, -hb - 0.10F, fullMid, 0.65F, 0.65F, RED, RED_V, d0, 0.15F);
         addSegX(body, "rail_s", mid0, deckY, hb - 0.55F, fullMid, 0.65F, 0.65F, RED, RED_V, d0, 0.15F);
