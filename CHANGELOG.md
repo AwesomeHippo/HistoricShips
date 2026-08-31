@@ -1,7 +1,7 @@
 # Changelog
 
 ### Version 26.1.2 - 3.0.0 (NeoForge) 2026-08-31
-- Quinquereme front sail is now paintable! (Laurea preset available)
+- Quinquereme front sail is now paintable! (Laurel preset available)
 - Now able to drop an image on the sail paint screens (WIP)
 - Trajectory preview a bit more visible
 - Undo freelook freezing the player
