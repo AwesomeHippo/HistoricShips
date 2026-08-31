@@ -48,7 +48,7 @@ public class DrakkarEntity extends OarShipEntity {
             MAX_PASSENGERS,
             new float[][] {{18.0F, 0.0F}, {8.0F, -2.8F}, {8.0F, 2.8F}, {-16.0F, 0.0F}},
             0.28F, 5.3F,
-            0.58F, 1.95F, 0.08F, 0.28F, 0.55F, 5.20F, 0.58F,
+            0.58F, 1.95F, 0.28F, 0.55F, 5.20F, 0.58F,
             0.42D, 0.18F, 0.10F, 0.05F,
             0.52D, 0.18F,
             0.024D, 0.00035D, 0.0028D, 0.989D,

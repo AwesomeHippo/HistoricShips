@@ -18,7 +18,6 @@ public final class OarShipStats {
     public final float u;
     public final float cruise;
     public final float hardRow;
-    public final float landSpeed;
     public final float thrustBlend;
     public final float thrustBlendHard;
     public final float turnRate;
@@ -41,7 +40,7 @@ public final class OarShipStats {
     public final double coastAlign;
     public final Supplier<ItemStack> dropStack;
 
-    public OarShipStats(float modelScale, float halfBeamModel, float halfBeamPad, float halfLoaModel, float hullHeightModel, float hullPad, float cullHalfLoaModel, float cullHalfBeamModel, float cullHeightModel, int maxPassengers, float[][] seatXz, float seatYPad, float modelDeckY, float cruise, float hardRow, float landSpeed, float thrustBlend, float thrustBlendHard, float turnRate, float steerSmooth, double rowSpeedDiv, float rowEaseUp, float rowStepBase, float rowStepHard, double sailSpeedDiv, float sailHardBonus, double swellRate, double swellAmp, double buoyLift, double waterDrag, double turnHorizDiv, double turnHorizCap, float reverseMaxMul, float hardBlendMul, float softBlendMul, double coastAlign, Supplier<ItemStack> dropStack) {
+    public OarShipStats(float modelScale, float halfBeamModel, float halfBeamPad, float halfLoaModel, float hullHeightModel, float hullPad, float cullHalfLoaModel, float cullHalfBeamModel, float cullHeightModel, int maxPassengers, float[][] seatXz, float seatYPad, float modelDeckY, float cruise, float hardRow, float thrustBlend, float thrustBlendHard, float turnRate, float steerSmooth, double rowSpeedDiv, float rowEaseUp, float rowStepBase, float rowStepHard, double sailSpeedDiv, float sailHardBonus, double swellRate, double swellAmp, double buoyLift, double waterDrag, double turnHorizDiv, double turnHorizCap, float reverseMaxMul, float hardBlendMul, float softBlendMul, double coastAlign, Supplier<ItemStack> dropStack) {
         float u = modelScale / 16.0F;
         this.u = u;
         this.halfBeam = halfBeamModel * u + halfBeamPad;
@@ -56,7 +55,6 @@ public final class OarShipStats {
         this.modelDeckY = modelDeckY;
         this.cruise = cruise;
         this.hardRow = hardRow;
-        this.landSpeed = landSpeed;
         this.thrustBlend = thrustBlend;
         this.thrustBlendHard = thrustBlendHard;
         this.turnRate = turnRate;

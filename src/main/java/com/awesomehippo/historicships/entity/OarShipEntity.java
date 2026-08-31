@@ -292,7 +292,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
         double bowX = -Mth.sin(yawRad);
         double bowZ = Mth.cos(yawRad);
 
-        if (thrustDir != 0.0F) {
+        if (thrustDir != 0.0F && this.isMarine()) {
             float max = this.smoothedMaxSpeed;
             if (forwardKey < 0.0F) {
                 max *= this.stats().reverseMaxMul;
@@ -317,7 +317,7 @@ public abstract class OarShipEntity extends StoredShipEntity {
     }
 
     private void tickSmoothedMaxSpeed(float waterTarget) {
-        float target = (this.isMarine() ? waterTarget : this.stats().landSpeed) * this.hullSpeedMult();
+        float target = (this.isMarine() ? waterTarget : 0.0F) * this.hullSpeedMult();
         float ease = target < this.smoothedMaxSpeed ? 0.07F : 0.11F;
         this.smoothedMaxSpeed += (target - this.smoothedMaxSpeed) * ease;
     }

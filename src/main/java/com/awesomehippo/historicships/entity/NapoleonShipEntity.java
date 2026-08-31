@@ -97,7 +97,6 @@ public class NapoleonShipEntity extends StoredShipEntity {
     private static final float CRUISE_FURLED = 0.34F;
     private static final float BOOST_SAILS = 1.30F;
     private static final float BOOST_FURLED = 0.80F;
-    private static final float LAND_SPEED = 0.08F;
     private static final float THRUST_BLEND = 0.22F;
     private static final float THRUST_BLEND_BOOST = 0.48F;
     private float smoothedMaxSpeed = CRUISE_SAILS;
@@ -486,7 +485,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
         double bowX = -Mth.sin(yawRad);
         double bowZ = Mth.cos(yawRad);
 
-        if (thrustDir != 0.0F) {
+        if (thrustDir != 0.0F && this.isMarine()) {
             float max = this.smoothedMaxSpeed;
             if (forwardKey < 0.0F) {
                 max *= 0.55F;
@@ -526,7 +525,7 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     private void tickSmoothedMaxSpeed(float waterTarget) {
-        float target = (this.isMarine() ? waterTarget : LAND_SPEED) * this.hullSpeedMult();
+        float target = (this.isMarine() ? waterTarget : 0.0F) * this.hullSpeedMult();
         float ease = target < this.smoothedMaxSpeed ? 0.07F : 0.11F;
         this.smoothedMaxSpeed += (target - this.smoothedMaxSpeed) * ease;
     }
