@@ -14,15 +14,17 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 
 public final class ShipLook {
     private static final float FOV_STEP = 5.0F;
-    private static final float FOV_MIN = -55.0F;
+    private static final float FOV_MIN = -70.0F;
     private static final float FOV_MAX = 6.0F;
-    private static final float FOV_FLOOR = 10.0F;
+    private static final float FOV_FLOOR = 5.0F;
     private static final float SMOOTH = 0.15F;
 
     private static boolean on;
     private static CameraType savedCam;
     private static float savedYaw;
     private static float savedPitch;
+    private static float camYaw;
+    private static float camPitch;
     private static float lookFov;
     private static float smoothedFov;
 
@@ -61,6 +63,21 @@ public final class ShipLook {
         }
         lookFov = Mth.clamp(lookFov - (float) event.getScrollDeltaY() * FOV_STEP, FOV_MIN, FOV_MAX);
         event.setCanceled(true);
+    }
+
+    public static void cameraAngles(ViewportEvent.ComputeCameraAngles event) {
+        if (!on) {
+            return;
+        }
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || !(player.getVehicle() instanceof StoredShipEntity)) {
+            return;
+        }
+        camYaw += Mth.wrapDegrees(player.getYRot() - savedYaw);
+        camPitch = Mth.clamp(camPitch + (player.getXRot() - savedPitch), -90.0F, 90.0F);
+        freeze(player);
+        event.setYaw(camYaw);
+        event.setPitch(camPitch);
     }
 
     public static void cameraFov(ViewportEvent.ComputeFov event) {
@@ -103,8 +120,11 @@ public final class ShipLook {
         savedCam = mc.options.getCameraType();
         savedYaw = player.getYRot();
         savedPitch = player.getXRot();
+        camYaw = savedYaw;
+        camPitch = savedPitch;
         lookFov = 0.0F;
         smoothedFov = 0.0F;
+        freeze(player);
         if (savedCam.isFirstPerson()) {
             mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
@@ -112,18 +132,22 @@ public final class ShipLook {
 
     private static void stop(Minecraft mc, LocalPlayer player) {
         if (player != null) {
-            player.setYRot(savedYaw);
-            player.setXRot(savedPitch);
-            player.yRotO = savedYaw;
-            player.xRotO = savedPitch;
-            player.setYHeadRot(savedYaw);
-            player.yHeadRotO = savedYaw;
-            player.yBodyRot = savedYaw;
-            player.yBodyRotO = savedYaw;
+            freeze(player);
         }
         mc.options.setCameraType(savedCam);
         lookFov = 0.0F;
         smoothedFov = 0.0F;
         on = false;
+    }
+
+    private static void freeze(LocalPlayer player) {
+        player.setYRot(savedYaw);
+        player.yRotO = savedYaw;
+        player.setYHeadRot(savedYaw);
+        player.yHeadRotO = savedYaw;
+        player.yBodyRot = savedYaw;
+        player.yBodyRotO = savedYaw;
+        player.setXRot(savedPitch);
+        player.xRotO = savedPitch;
     }
 }

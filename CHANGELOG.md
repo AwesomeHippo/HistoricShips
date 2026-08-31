@@ -4,6 +4,8 @@
 - Better and more accurate Roman Eagle preset design
 - Improved Ram impact for Qinquereme
 - Slower speed when the ships are damaged
+- Added a config to keep or drop the cargo items
+- Fixed more issues with quinquerem painted sail overlay (and the painting is now shown on the whole sail, noy only the front)
 
 ### Version 26.1.2 - 2.0.0 (NeoForge) 2026-08-30
 - a TONS of update... (todo)
