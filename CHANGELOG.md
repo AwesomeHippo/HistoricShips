@@ -5,6 +5,7 @@
 - Now able to drop an image on the sail paint screens (WIP)
 - Trajectory preview a bit more visible
 - Undo freelook freezing the player
+- Fixed desynced movement for passengers in multiplayer
 - Small updates
 
 ### Version 26.1.2 - 2.1.0 (NeoForge) 2026-08-31
