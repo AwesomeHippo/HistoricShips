@@ -31,7 +31,7 @@ public class DrakkarRenderer extends EntityRenderer<DrakkarEntity, OarShipRender
     @Override
     public void submit(OarShipRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
         poseStack.pushPose();
-        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD, state.sinkProgress, state.sinkRollDir);
+        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD, state.sinkProgress, state.sinkRollDir, state.ramImpactRoll);
         Identifier texture = DrakkarSailStripe.byId(state.sailStripe).texture(state.damageStage);
         submitNodeCollector.submitModel(this.model, state, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         poseStack.popPose();

@@ -14,4 +14,5 @@ public class NapoleonShipRenderState extends EntityRenderState {
     public int damageStage;
     public float sinkProgress;
     public float sinkRollDir;
+    public float ramImpactRoll;
 }

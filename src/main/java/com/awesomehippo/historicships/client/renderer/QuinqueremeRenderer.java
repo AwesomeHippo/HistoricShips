@@ -35,7 +35,7 @@ public class QuinqueremeRenderer extends EntityRenderer<QuinqueremeEntity, OarSh
     @Override
     public void submit(OarShipRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
         poseStack.pushPose();
-        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.QUINQUEREME, state.sinkProgress, state.sinkRollDir);
+        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.QUINQUEREME, state.sinkProgress, state.sinkRollDir, state.ramImpactRoll);
         Identifier texture = ShipDamageTextures.stage("quinquereme", state.damageStage);
         submitNodeCollector.submitModel(this.model, state, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         if (state.sailPaint != null) {

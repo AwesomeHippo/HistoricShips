@@ -63,6 +63,9 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
     private static final int HURT_INVULN_TICKS = 10;
     private static final int RAM_COOLDOWN_TICKS = 28;
     private static final float RAM_MIN_CLOSE = 0.08F;
+    private static final byte RAM_IMPACT_PORT = 70;
+    private static final byte RAM_IMPACT_STARBOARD = 71;
+    private static final int RAM_IMPACT_TICKS = 24;
     private static final int REPAIR_PLANKS = 30;
     private static final float REPAIR_HULL_FRAC = 0.15F;
     public static final int SINK_DURATION = 100;
@@ -77,6 +80,8 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
     private int ramCooldown;
     private double ramVelX;
     private double ramVelZ;
+    private int ramImpactTicks;
+    private float ramImpactDirection;
     private @Nullable UUID ownerUuid;
     private int sinkTicks;
     private int sinkTicksPrev;
@@ -236,6 +241,9 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         if (this.ramCooldown > 0) {
             this.ramCooldown--;
         }
+        if (this.ramImpactTicks > 0) {
+            this.ramImpactTicks--;
+        }
         this.sinkTicksPrev = this.sinkTicksSync;
         this.sinkTicksSync = this.entityData.get(DATA_SINK_TICKS);
         if (this.isSinking()) {
@@ -257,6 +265,22 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     public float getSinkRollDir() {
         return this.getId() % 2 == 0 ? 1.0F : -1.0F;
+    }
+
+    public float getRamImpactRoll(float partialTicks) {
+        float remaining = Mth.clamp(this.ramImpactTicks - partialTicks, 0.0F, RAM_IMPACT_TICKS);
+        float elapsed = RAM_IMPACT_TICKS - remaining;
+        return Mth.sin(elapsed * 0.42F) * (remaining / RAM_IMPACT_TICKS) * this.ramImpactDirection * 0.04F;
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == RAM_IMPACT_PORT || id == RAM_IMPACT_STARBOARD) {
+            this.ramImpactTicks = RAM_IMPACT_TICKS;
+            this.ramImpactDirection = id == RAM_IMPACT_PORT ? -1.0F : 1.0F;
+            return;
+        }
+        super.handleEntityEvent(id);
     }
 
     protected void applySinkMotion() {
@@ -658,6 +682,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         }
         if (this.level().isClientSide()) {
             if (this.isLocalInstanceAuthoritative()) {
+                this.bounceRam(bowX, bowZ);
                 RamHitPacket.send(this.getId(), target.getId(), (float) closing);
                 this.ramCooldown = RAM_COOLDOWN_TICKS;
             }
@@ -713,36 +738,44 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         float dmg = Mth.clamp(base * (float) (closing / 0.50D), base * 0.55F, base * 1.85F);
         if (target.damageHull(server, dmg, this)) {
             this.ramCooldown = RAM_COOLDOWN_TICKS;
-            this.ramImpact(bowX, bowZ, closing);
-            target.setDeltaMovement(ov.add(bowX * closing * 0.28, 0.04, bowZ * closing * 0.28));
+            this.bounceRam(bowX, bowZ);
+            this.ramImpact(server, target, bowX, bowZ, closing);
+            target.setDeltaMovement(ov.add(bowX * closing * 0.24, 0.02, bowZ * closing * 0.24));
         }
     }
 
-    private void ramImpact(float bowX, float bowZ, double closing) {
+    private void bounceRam(float bowX, float bowZ) {
+        Vec3 v = this.getDeltaMovement();
+        this.setDeltaMovement(v.x * 0.80 - bowX * 0.03, v.y, v.z * 0.80 - bowZ * 0.03);
+    }
+
+    private void ramImpact(ServerLevel server, StoredShipEntity target, float bowX, float bowZ, double closing) {
         double hx = this.getX() + bowX * this.bowReach();
         double hy = this.getY() + 0.45;
         double hz = this.getZ() + bowZ * this.bowReach();
         BlockParticleOption wood = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState());
         BlockParticleOption copper = new BlockParticleOption(ParticleTypes.BLOCK, Blocks.COPPER_BLOCK.defaultBlockState());
-        if (this.level() instanceof ServerLevel server) {
-            float loud = (float) Mth.clamp(0.85 + closing * 0.5, 0.9, 1.3);
-            server.playSound(null, hx, hy, hz, SoundEvents.IRON_GOLEM_ATTACK, SoundSource.NEUTRAL, 1.15F * loud, 0.48F);
-            server.playSound(null, hx, hy, hz, SoundEvents.WOOD_BREAK, SoundSource.NEUTRAL, 1.2F, 0.48F + this.random.nextFloat() * 0.08F);
-            server.playSound(null, hx, hy, hz, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.0F, 0.62F);
-            int shards = 16 + (int) (Mth.clamp(closing, 0.08, 1.2) * 18);
-            for (int i = 0; i < shards; i++) {
-                double vx = bowX * (0.10 + this.random.nextDouble() * 0.26) + (this.random.nextDouble() - 0.5) * 0.16;
-                double vy = 0.06 + this.random.nextDouble() * 0.22;
-                double vz = bowZ * (0.10 + this.random.nextDouble() * 0.26) + (this.random.nextDouble() - 0.5) * 0.16;
-                server.sendParticles(wood, hx, hy, hz, 0, vx, vy, vz, 1.0);
-            }
-            for (int i = 0; i < 8; i++) {
-                server.sendParticles(copper, hx, hy, hz, 0, (this.random.nextDouble() - 0.5) * 0.14, 0.04 + this.random.nextDouble() * 0.10, (this.random.nextDouble() - 0.5) * 0.14, 1.0);
-            }
-            server.sendParticles(ParticleTypes.SPLASH, hx, hy, hz, 28, 0.45, 0.22, 0.45, 0.16);
-            server.sendParticles(ParticleTypes.BUBBLE, hx, hy - 0.12, hz, 14, 0.32, 0.12, 0.32, 0.06);
-            server.sendParticles(ParticleTypes.CLOUD, hx + bowX * 0.2, hy + 0.12, hz + bowZ * 0.2, 8, 0.22, 0.10, 0.22, 0.02);
+        float loud = (float) Mth.clamp(0.85 + closing * 0.5, 0.9, 1.3);
+        server.playSound(null, hx, hy, hz, SoundEvents.IRON_GOLEM_ATTACK, SoundSource.NEUTRAL, 1.15F * loud, 0.48F);
+        server.playSound(null, hx, hy, hz, SoundEvents.WOOD_BREAK, SoundSource.NEUTRAL, 1.2F, 0.48F + this.random.nextFloat() * 0.08F);
+        server.playSound(null, hx, hy, hz, SoundEvents.GENERIC_SPLASH, SoundSource.NEUTRAL, 1.0F, 0.62F);
+        int shards = 16 + (int) (Mth.clamp(closing, 0.08, 1.2) * 18);
+        for (int i = 0; i < shards; i++) {
+            double vx = bowX * (0.10 + this.random.nextDouble() * 0.26) + (this.random.nextDouble() - 0.5) * 0.16;
+            double vy = 0.06 + this.random.nextDouble() * 0.22;
+            double vz = bowZ * (0.10 + this.random.nextDouble() * 0.26) + (this.random.nextDouble() - 0.5) * 0.16;
+            server.sendParticles(wood, hx, hy, hz, 0, vx, vy, vz, 1.0);
         }
+        for (int i = 0; i < 8; i++) {
+            server.sendParticles(copper, hx, hy, hz, 0, (this.random.nextDouble() - 0.5) * 0.14, 0.04 + this.random.nextDouble() * 0.10, (this.random.nextDouble() - 0.5) * 0.14, 1.0);
+        }
+        server.sendParticles(ParticleTypes.SPLASH, hx, hy, hz, 28, 0.45, 0.22, 0.45, 0.16);
+        server.sendParticles(ParticleTypes.BUBBLE, hx, hy - 0.12, hz, 14, 0.32, 0.12, 0.32, 0.06);
+        server.sendParticles(ParticleTypes.CLOUD, hx + bowX * 0.2, hy + 0.12, hz + bowZ * 0.2, 8, 0.22, 0.10, 0.22, 0.02);
+
+        float targetYaw = target.getYRot() * Mth.DEG_TO_RAD;
+        double side = (hx - target.getX()) * Mth.cos(targetYaw) + (hz - target.getZ()) * Mth.sin(targetYaw);
+        server.broadcastEntityEvent(target, side < 0.0 ? RAM_IMPACT_PORT : RAM_IMPACT_STARBOARD);
     }
 
     private void startSinking(ServerLevel level, @Nullable LivingEntity breaker) {
@@ -832,9 +865,11 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         this.markHurt();
         this.gameEvent(GameEvent.ENTITY_DAMAGE, attacker);
 
-        level.playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 1.15F, 0.75F + this.random.nextFloat() * 0.2F);
-        level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY() + 1.2, this.getZ(), 14, 0.8, 0.5, 0.8, 0.06);
-        level.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 1.4, this.getZ(), 6, 0.5, 0.3, 0.5, 0.02);
+        if (!(attacker instanceof StoredShipEntity)) {
+            level.playSound(null, this.getX(), this.getY() + 1.0, this.getZ(), SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.NEUTRAL, 1.15F, 0.75F + this.random.nextFloat() * 0.2F);
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY() + 1.2, this.getZ(), 14, 0.8, 0.5, 0.8, 0.06);
+            level.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + 1.4, this.getZ(), 6, 0.5, 0.3, 0.5, 0.02);
+        }
 
         if (this.hull <= 0) {
             LivingEntity breaker = null;

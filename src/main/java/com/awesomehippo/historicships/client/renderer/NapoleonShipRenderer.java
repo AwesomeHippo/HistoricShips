@@ -31,7 +31,7 @@ public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, Nap
     @Override
     public void submit(NapoleonShipRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
         poseStack.pushPose();
-        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD, state.sinkProgress, state.sinkRollDir);
+        ShipRenderPose.apply(poseStack, state.ageInTicks, state.yRot, SCALE, state.localPassenger, ShipRenderPose.STANDARD, state.sinkProgress, state.sinkRollDir, state.ramImpactRoll);
         Identifier texture = ShipDamageTextures.stage("napoleon_ship", state.damageStage);
         submitNodeCollector.submitModel(this.model, state, poseStack, texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         poseStack.popPose();
@@ -55,6 +55,7 @@ public class NapoleonShipRenderer extends EntityRenderer<NapoleonShipEntity, Nap
         state.damageStage = entity.getDamageStage();
         state.sinkProgress = entity.getSinkProgress(partialTicks);
         state.sinkRollDir = entity.getSinkRollDir();
+        state.ramImpactRoll = entity.getRamImpactRoll(partialTicks);
         Minecraft mc = Minecraft.getInstance();
         state.localPassenger = mc.player != null && entity.hasPassenger(mc.player);
         state.helmCockpit = mc.options.getCameraType().isFirstPerson() && state.localPassenger && entity.isConductor(mc.player);

@@ -21,6 +21,7 @@ public class OarShipRenderState extends EntityRenderState {
     public int damageStage;
     public float sinkProgress;
     public float sinkRollDir;
+    public float ramImpactRoll;
     @Nullable
     public Identifier sailPaint;
 
@@ -33,6 +34,7 @@ public class OarShipRenderState extends EntityRenderState {
         this.damageStage = entity.getDamageStage();
         this.sinkProgress = entity.getSinkProgress(partialTicks);
         this.sinkRollDir = entity.getSinkRollDir();
+        this.ramImpactRoll = entity.getRamImpactRoll(partialTicks);
         Minecraft mc = Minecraft.getInstance();
         this.localPassenger = mc.player != null && entity.hasPassenger(mc.player);
         if (entity instanceof DrakkarEntity drakkar) {

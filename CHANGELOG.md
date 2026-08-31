@@ -1,5 +1,10 @@
 # Changelog
 
+
+### Version 26.1.2 - 2.1.0 (NeoForge) 2026-08-31
+- Better and more accurate Roman Eagle preset design
+- Improved Ram impact for Qinquereme
+
 ### Version 26.1.2 - 2.0.0 (NeoForge) 2026-08-30
 - a TONS of update... (todo)
 
