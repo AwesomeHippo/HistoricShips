@@ -3,6 +3,7 @@ package com.awesomehippo.historicships.entity;
 import com.awesomehippo.historicships.HistoricShips;
 import com.awesomehippo.historicships.ShipsConfig;
 import com.awesomehippo.historicships.network.RamHitPacket;
+import com.awesomehippo.historicships.network.RamKnockPacket;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
@@ -52,6 +53,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -86,6 +88,8 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
     private double ramVelZ;
     private int ramImpactTicks;
     private float ramImpactDirection;
+    private float ramPushX;
+    private float ramPushZ;
     private @Nullable UUID ownerUuid;
     private int sinkTicks;
     private int sinkTicksPrev;
@@ -157,6 +161,10 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     protected float ramDamage() {
         return 0.0F;
+    }
+
+    protected float ramKnock() {
+        return 0.24F;
     }
 
     protected abstract float halfBeam();
@@ -445,10 +453,13 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
                     this.controlShip();
                 }
             }
+            this.applyRamPush();
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.resolveHullCollisions();
         } else {
             this.setDeltaMovement(Vec3.ZERO);
+            this.ramPushX = 0.0F;
+            this.ramPushZ = 0.0F;
         }
         this.setBoundingBox(this.makeBoundingBox());
         if (!this.level().isClientSide() && this.serverHasMoveInput() && this.random.nextInt(40) == 0) {
@@ -754,13 +765,41 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             return;
         }
         closing = Mth.clamp(closing, RAM_MIN_CLOSE, 2.0);
-        Vec3 ov = target.getDeltaMovement();
         float dmg = Mth.clamp(base * (float) (closing / 0.50D), base * 0.55F, base * 1.85F);
         if (target.damageHull(server, dmg, this)) {
             this.ramCooldown = RAM_COOLDOWN_TICKS;
             this.bounceRam(bowX, bowZ);
             this.ramImpact(server, target, bowX, bowZ, closing);
-            target.setDeltaMovement(ov.add(bowX * closing * 0.24, 0.02, bowZ * closing * 0.24));
+            float push = this.ramKnock() * (float) closing;
+            if (target.getControllingPassenger() instanceof ServerPlayer player) {
+                PacketDistributor.sendToPlayer(player, new RamKnockPacket(target.getId(), bowX, bowZ, push));
+            } else {
+                target.applyRamKnock(bowX, bowZ, push);
+            }
+        }
+    }
+
+    public void applyRamKnock(float bowX, float bowZ, float push) {
+        if (push < 0.02F) {
+            return;
+        }
+        this.ramPushX += bowX * push;
+        this.ramPushZ += bowZ * push;
+    }
+
+    private void applyRamPush() {
+        if (this.ramPushX == 0.0F && this.ramPushZ == 0.0F) {
+            return;
+        }
+        float ax = this.ramPushX * 0.22F;
+        float az = this.ramPushZ * 0.22F;
+        Vec3 v = this.getDeltaMovement();
+        this.setDeltaMovement(v.x + ax, v.y, v.z + az);
+        this.ramPushX -= ax;
+        this.ramPushZ -= az;
+        if (this.ramPushX * this.ramPushX + this.ramPushZ * this.ramPushZ < 4.0E-4F) {
+            this.ramPushX = 0.0F;
+            this.ramPushZ = 0.0F;
         }
     }
 

@@ -17,6 +17,7 @@ import com.awesomehippo.historicships.menu.ShipwrightMenu;
 import com.awesomehippo.historicships.network.FireBowShellPacket;
 import com.awesomehippo.historicships.network.FireTowerStonePacket;
 import com.awesomehippo.historicships.network.RamHitPacket;
+import com.awesomehippo.historicships.network.RamKnockPacket;
 import com.awesomehippo.historicships.network.SailPaintPacket;
 import com.awesomehippo.historicships.network.ToggleSailsPacket;
 import com.mojang.serialization.Codec;
@@ -174,6 +175,7 @@ public class HistoricShips {
         registrar.playToServer(FireTowerStonePacket.TYPE, FireTowerStonePacket.STREAM_CODEC, FireTowerStonePacket::handle);
         registrar.playToServer(ToggleSailsPacket.TYPE, ToggleSailsPacket.STREAM_CODEC, ToggleSailsPacket::handle);
         registrar.playToServer(RamHitPacket.TYPE, RamHitPacket.STREAM_CODEC, RamHitPacket::handle);
+        registrar.playToClient(RamKnockPacket.TYPE, RamKnockPacket.STREAM_CODEC, RamKnockPacket::handle);
         registrar.playBidirectional(SailPaintPacket.TYPE, SailPaintPacket.STREAM_CODEC, SailPaintPacket::handleServer, SailPaintPacket::handleClient);
     }
 }

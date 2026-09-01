@@ -193,6 +193,21 @@ public class NapoleonShipEntity extends StoredShipEntity {
     }
 
     @Override
+    protected float ramAlongMin() {
+        return 54.0F * U;
+    }
+
+    @Override
+    protected float ramDamage() {
+        return 1.2F;
+    }
+
+    @Override
+    protected float ramKnock() {
+        return 1.05F;
+    }
+
+    @Override
     protected float halfLoa() {
         return HALF_LOA;
     }
