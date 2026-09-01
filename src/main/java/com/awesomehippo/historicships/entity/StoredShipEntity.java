@@ -442,7 +442,12 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     protected void tickMovement() {
         this.trackRamVelocity();
-        this.interpolation.interpolate();
+        boolean shoving = this.ramPushX != 0.0F || this.ramPushZ != 0.0F;
+        if (shoving) {
+            this.interpolation.cancel();
+        } else {
+            this.interpolation.interpolate();
+        }
         if (this.isLocalInstanceAuthoritative()) {
             if (this.isSinking()) {
                 this.applySinkMotion();
@@ -456,10 +461,11 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             this.applyRamPush();
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.resolveHullCollisions();
+        } else if (shoving) {
+            this.applyRamPush();
+            this.move(MoverType.SELF, this.getDeltaMovement());
         } else {
             this.setDeltaMovement(Vec3.ZERO);
-            this.ramPushX = 0.0F;
-            this.ramPushZ = 0.0F;
         }
         this.setBoundingBox(this.makeBoundingBox());
         if (!this.level().isClientSide() && this.serverHasMoveInput() && this.random.nextInt(40) == 0) {
@@ -573,6 +579,9 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
         if (other instanceof StoredShipEntity ship) {
             this.tryRamHit(ship, bowX, bowZ);
+            if (this.ramCooldown == RAM_COOLDOWN_TICKS) {
+                return;
+            }
             if (this.getId() > ship.getId()) {
                 return;
             }
@@ -714,7 +723,11 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
         if (this.level().isClientSide()) {
             if (this.isLocalInstanceAuthoritative()) {
                 this.bounceRam(bowX, bowZ);
-                RamHitPacket.send(this.getId(), target.getId(), (float) closing);
+                float close = (float) Mth.clamp(closing, RAM_MIN_CLOSE, 2.0);
+                float push = this.ramKnock() * close;
+                target.applyRamKnock(bowX, bowZ, push, close);
+                this.pushTargetOut(target, bowX, bowZ);
+                RamHitPacket.send(this.getId(), target.getId(), close);
                 this.ramCooldown = RAM_COOLDOWN_TICKS;
             }
             return;
@@ -733,7 +746,7 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             double oz = n == 0 ? this.getZ() : this.zo;
             for (int i = 0; i <= 4; i++) {
                 float a = ram0 + (ram1 - ram0) * (i / 4.0F);
-                if (target.hullContains(ox + bowX * a, hy, oz + bowZ * a, 0.40)) {
+                if (target.hullContains(ox + bowX * a, hy, oz + bowZ * a, 1.15)) {
                     return true;
                 }
             }
@@ -772,27 +785,45 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
             this.ramImpact(server, target, bowX, bowZ, closing);
             float push = this.ramKnock() * (float) closing;
             if (target.getControllingPassenger() instanceof ServerPlayer player) {
-                PacketDistributor.sendToPlayer(player, new RamKnockPacket(target.getId(), bowX, bowZ, push));
+                PacketDistributor.sendToPlayer(player, new RamKnockPacket(target.getId(), bowX, bowZ, push, (float) closing));
             } else {
-                target.applyRamKnock(bowX, bowZ, push);
+                target.applyRamKnock(bowX, bowZ, push, (float) closing);
             }
+            this.pushTargetOut(target, bowX, bowZ);
         }
     }
 
-    public void applyRamKnock(float bowX, float bowZ, float push) {
+    public void applyRamKnock(float bowX, float bowZ, float push, float closing) {
         if (push < 0.02F) {
             return;
         }
-        this.ramPushX += bowX * push;
-        this.ramPushZ += bowZ * push;
+        this.interpolation.cancel();
+        float kick = closing <= 0.55F ? Mth.clamp(push * 0.55F, 0.32F, 0.48F) : closing + 0.55F;
+        Vec3 v = this.getDeltaMovement();
+        this.setDeltaMovement(v.x + bowX * kick, v.y, v.z + bowZ * kick);
+        this.setPos(this.getX() + bowX * kick, this.getY(), this.getZ() + bowZ * kick);
+        this.ramPushX += bowX * (push * 0.5F);
+        this.ramPushZ += bowZ * (push * 0.5F);
+    }
+
+    private void pushTargetOut(StoredShipEntity target, float bowX, float bowZ) {
+        double[] hit = new double[3];
+        if (!this.hullPush(target, this.getX(), this.getZ(), target.getX(), target.getZ(), hit)) {
+            return;
+        }
+        double extra = hit[2] + 0.2;
+        double along = hit[0] * bowX + hit[1] * bowZ;
+        double ox = along > 0.15 ? bowX : hit[0];
+        double oz = along > 0.15 ? bowZ : hit[1];
+        target.setPos(target.getX() + ox * extra, target.getY(), target.getZ() + oz * extra);
     }
 
     private void applyRamPush() {
         if (this.ramPushX == 0.0F && this.ramPushZ == 0.0F) {
             return;
         }
-        float ax = this.ramPushX * 0.22F;
-        float az = this.ramPushZ * 0.22F;
+        float ax = this.ramPushX * 0.32F;
+        float az = this.ramPushZ * 0.32F;
         Vec3 v = this.getDeltaMovement();
         this.setDeltaMovement(v.x + ax, v.y, v.z + az);
         this.ramPushX -= ax;
@@ -805,7 +836,8 @@ public abstract class StoredShipEntity extends Entity implements HasCustomInvent
 
     private void bounceRam(float bowX, float bowZ) {
         Vec3 v = this.getDeltaMovement();
-        this.setDeltaMovement(v.x * 0.80 - bowX * 0.03, v.y, v.z * 0.80 - bowZ * 0.03);
+        float damp = v.horizontalDistance() > 0.7 ? 0.60F : 0.78F;
+        this.setDeltaMovement(v.x * damp - bowX * 0.06, v.y, v.z * damp - bowZ * 0.06);
     }
 
     private void ramImpact(ServerLevel server, StoredShipEntity target, float bowX, float bowZ, double closing) {
